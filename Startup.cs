@@ -32,13 +32,24 @@ namespace Forum
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-          
 
+            services.AddSingleton<DataBaseCache>();
             services.AddDbContext<ForumDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"))
             );
 
-            services.AddIdentity<AppUser, IdentityRole>()
+            services.AddIdentity<AppUser, IdentityRole>( options => {
+                //Password
+                options.Password.RequireDigit = true;
+                options.Password.RequiredLength = 6;
+                //options.Password.RequiredUniqueChars = 1;
+                options.Password.RequireLowercase = false;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireUppercase = false;
+                //Email
+                options.User.RequireUniqueEmail = true;
+                
+            })
                 .AddEntityFrameworkStores<ForumDbContext>()
                 .AddDefaultTokenProviders();
 
@@ -72,6 +83,8 @@ namespace Forum
             {
                 app.UseDeveloperExceptionPage();
                 DbContext.Database.EnsureDeleted(); // DO NOT TRY THIS AT HOME
+                DbContext.Database.EnsureCreated();
+
             }
             else
             {
@@ -93,8 +106,8 @@ namespace Forum
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
             
-            DbContext.Database.EnsureCreated();
             ConfigureRolesAsync(serviceProvider).Wait();
+            serviceProvider.GetRequiredService<DataBaseCache>().Init(DbContext);
         }
 
         //TODO: add superuser to configuration

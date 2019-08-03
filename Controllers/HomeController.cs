@@ -12,7 +12,7 @@ namespace Forum.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ForumDbContext DbContext;
+        private readonly ForumDbContext DbContext;    
         public HomeController(ForumDbContext forumDbContext)
         {
             DbContext = forumDbContext;

@@ -9,6 +9,6 @@ namespace Forum.Models
     public class AppUser : IdentityUser
     {
         public List<RefreshToken> RefreshTokens { get; set; }
-     
+        public List<Post> Posts { get; set; }
     }
 }

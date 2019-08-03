@@ -15,5 +15,8 @@ namespace Forum.Models
         {
         }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
+        public DbSet<SubForum> SubForums { get; set; }
+        public DbSet<ForumThread> Threads { get; set; }
+        public DbSet<Post> Posts { get; set; }
     }
 }
