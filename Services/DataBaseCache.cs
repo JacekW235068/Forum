@@ -7,17 +7,21 @@ using System.Threading.Tasks;
 
 namespace Forum.Services
 {
-    public class DataBaseCache
+    public class DataBaseCache : IDatabaseCache
     {
         private  List<ForumThread> threads;
+        private int MaxItems;
         public IReadOnlyCollection<ForumThread> Threads { get { return threads.AsReadOnly(); } }
-        public DataBaseCache()
+       
+        public DataBaseCache(int maxItems)
         {
-
+            MaxItems = maxItems;
         }
-        public void Init(ForumDbContext dbContext)
+              
+        public void Init(ForumDbContext context)
         {
-            threads = dbContext.Threads.OrderByDescending(x => x.LastPostTime).Take(30).ToList();
+            if (threads == null)
+                threads = context.Threads.OrderByDescending(x => x.LastPostTime).Take(MaxItems).ToList();
         }
         public void Add(ForumThread thread)
         {
@@ -26,11 +30,13 @@ namespace Forum.Services
                 thread.Title == null ||
                 thread.Text == null)
                 throw new NullReferenceException();
+
             var i = threads.Select(x => x.ThreadID).ToList().IndexOf(thread.ThreadID);
-            if (i == -1)
-                threads.RemoveAt(29);
-            else
-                threads.RemoveAt(i);
+            if(threads.Count == MaxItems)
+                if (i == -1)
+                    threads.RemoveAt(MaxItems - 1);
+                else
+                    threads.RemoveAt(i);
             threads.Add(thread);
         }
     }

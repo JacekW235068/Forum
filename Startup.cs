@@ -33,11 +33,11 @@ namespace Forum
         public void ConfigureServices(IServiceCollection services)
         {
 
-            services.AddSingleton<DataBaseCache>();
+            
             services.AddDbContext<ForumDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"))
             );
-
+           
             services.AddIdentity<AppUser, IdentityRole>( options => {
                 //Password
                 options.Password.RequireDigit = true;
@@ -71,7 +71,13 @@ namespace Forum
                     ClockSkew = TimeSpan.Zero
                 };
             });
-            services.AddScoped<ITokenFactory>(sp => (ITokenFactory)new TokenGenerator(Configuration["JwtKey"], Convert.ToDouble(Configuration["JwtExpireDays"]), Configuration["JwtIssuer"]));
+        
+
+            services.AddSingleton<IDatabaseCache>(sp => 
+            (IDatabaseCache)new DataBaseCache(Convert.ToInt32(Configuration["PostsInCache"])));
+            services.AddScoped<ITokenFactory>(sp => 
+            (ITokenFactory)new TokenGenerator(Configuration["JwtKey"], Convert.ToDouble(Configuration["JwtExpireDays"]),
+            Configuration["JwtIssuer"], Convert.ToDouble(Configuration["RefreshExpireDays"])));
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
@@ -98,7 +104,6 @@ namespace Forum
             app.UseCookiePolicy();
 
 
-            app.UseAuthentication();
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
@@ -107,10 +112,9 @@ namespace Forum
             });
             
             ConfigureRolesAsync(serviceProvider).Wait();
-            serviceProvider.GetRequiredService<DataBaseCache>().Init(DbContext);
+            (serviceProvider.GetRequiredService<IDatabaseCache>() as DataBaseCache).Init(DbContext);
         }
 
-        //TODO: add superuser to configuration
         private async Task ConfigureRolesAsync(IServiceProvider serviceProvider)
         {
             var _roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
@@ -127,13 +131,13 @@ namespace Forum
             }
 
             //create super user
-            var superUser = await _userManager.FindByEmailAsync("super@user.wp");
+            var superUser = await _userManager.FindByEmailAsync(Configuration["AdminEmail"]);
             if (superUser == null)
             {
                 var result = await _userManager.CreateAsync(new AppUser() {
-                    UserName = "HeadAdmin",
-                    Email = "super@user.wp"
-                }, "Super$3cret");
+                    UserName = Configuration["AdminName"],
+                    Email = Configuration["AdminEmail"]
+                }, Configuration["AdminPass"]);
                 if (result.Succeeded)
                 {
                     await _userManager.AddToRoleAsync(await _userManager.FindByEmailAsync("super@user.wp"), "Admin");

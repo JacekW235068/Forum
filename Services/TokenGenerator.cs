@@ -14,14 +14,18 @@ namespace Forum.Services
 {
     public class TokenGenerator: ITokenFactory
     {
-        readonly string Key;
-        readonly double ExpirationDate;
-        readonly string Issuer;
-        public TokenGenerator(string key, double expirationDate, string issuer)
+        private readonly string Key;
+        private readonly double ExpirationDate;
+        private readonly string Issuer;
+        private readonly double RefreshExpirationDate;
+
+        public TokenGenerator(string key, double expirationDate, string issuer, double refreshExpirationDate)
         {
             Key = key;
             ExpirationDate = expirationDate;
             Issuer = issuer;
+           
+            RefreshExpirationDate = refreshExpirationDate;
         }
 
       
@@ -52,7 +56,6 @@ namespace Forum.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        //TODO: Add size and expiration date to configuration
         public RefreshToken StandardRefreshToken()
         {
             var randomNumber = new byte[8];
@@ -65,7 +68,7 @@ namespace Forum.Services
             return new RefreshToken()
             {
                 Token = token,
-                ExpirationDate = DateTime.Now.AddDays(5)
+                ExpirationDate = DateTime.Now.AddDays(RefreshExpirationDate)
                 //Check if needs user
 
             };
