@@ -49,6 +49,7 @@ namespace Forum
                 //Email
                 options.User.RequireUniqueEmail = true;
                 
+                
             })
                 .AddEntityFrameworkStores<ForumDbContext>()
                 .AddDefaultTokenProviders();
@@ -113,6 +114,7 @@ namespace Forum
             
             ConfigureRolesAsync(serviceProvider).Wait();
             (serviceProvider.GetRequiredService<IDatabaseCache>() as DataBaseCache).Init(DbContext);
+            (serviceProvider.GetRequiredService<IDatabaseCache>() as DataBaseCache).RefreshSubForums(DbContext);
         }
 
         private async Task ConfigureRolesAsync(IServiceProvider serviceProvider)

@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Forum
 {
+    //TODO: Add Catching errors
     public class Program
     {
         public static void Main(string[] args)

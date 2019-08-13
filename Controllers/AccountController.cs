@@ -12,7 +12,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Forum.Controllers
 {
-    //TODO Refreshing Tokens
+
+    [Route("api/[controller]")]
+    [ApiController]
     public class AccountController : Controller
     {
         private readonly ForumDbContext _forumDbContext;
@@ -32,9 +34,9 @@ namespace Forum.Controllers
         }
 
     
-        [Route("Register")]
         [HttpPost]
-        public async Task<IActionResult> RegisterAsync(AppUserRegisterPost user)
+        [Route("Register")]
+        public async Task<IActionResult> RegisterAsync([FromForm]AppUserRegisterPost user)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
                 //return BadRequest(JsonParser.Parse(ModelState));
@@ -60,8 +62,6 @@ namespace Forum.Controllers
             });
         }
 
-     
-        [Route("Login")]
         [HttpPost]
         public async Task<IActionResult> LoginAsync(AppUserLoginPost user)
         {
@@ -81,6 +81,7 @@ namespace Forum.Controllers
                         AccessToken = _tokenGenerator.StandardAccessToken(appUser, roles),
                         RefreshToken = response.Token
                     });
+                   
                 }
                 return BadRequest(Json(new { Error = "Bad login or password", Lockedout = signInResult.IsLockedOut}));
                 
@@ -89,8 +90,6 @@ namespace Forum.Controllers
             
 
         }
-
-
 
         [HttpPost]
         public async Task<IActionResult> RefreshTokenAsync(string access, string refresh)
