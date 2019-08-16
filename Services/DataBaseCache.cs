@@ -11,23 +11,27 @@ namespace Forum.Services
     //TODO: Change ForumThreads to viewmodels
     public class DataBaseCache : IDatabaseCache
     {
-        private List<SubForumGet> subForums;
-        private List<ForumThread> threads;
+        private readonly List<SubForumGet> subForums;
+        private readonly List<ForumThreadGet> threads;
         private readonly int maxThreads;
-        public IReadOnlyCollection<ForumThread> Threads { get { return threads.AsReadOnly(); } }
+        public IReadOnlyCollection<ForumThreadGet> Threads { get {
+                return threads;
+            } }
+        public int MaxThreads { get { return maxThreads; } }
         public IReadOnlyCollection<SubForumGet> SubForums { get { return subForums.AsReadOnly(); } }
        
         public DataBaseCache(int maxItems)
         {
             maxThreads = maxItems;
             subForums = new List<SubForumGet>();
+            threads = new List<ForumThreadGet>();
         }
               
-        public void Init(ForumDbContext context)
+        public void InitForumThreads(ForumDbContext context)
         {
-            if (threads == null)
-                threads = context.Threads.OrderByDescending(x => x.LastPostTime).Take(maxThreads).ToList();
-           
+            threads.Clear();
+            foreach (var t in context.Threads.OrderByDescending(x => x.LastPostTime).Take(maxThreads).ToList())
+                threads.Add(t);
         }
         public void AddThread(ForumThread thread)
         {
@@ -36,7 +40,7 @@ namespace Forum.Services
                 thread.Text == null)
                 throw new NullReferenceException();
 
-            var i = threads.Select(x => x.ThreadID).ToList().IndexOf(thread.ThreadID);
+            var i = threads.Select(x => x.ID).ToList().IndexOf(thread.ThreadID.ToString());
             if(threads.Count == maxThreads)
                 if (i == -1)
                     threads.RemoveAt(maxThreads - 1);
@@ -46,7 +50,7 @@ namespace Forum.Services
         }
         public bool DeleteThread(string Id)
         {
-            var i = threads.Select(x => x.ThreadID.ToString()).ToList().IndexOf(Id);
+            var i = threads.Select(x => x.ID).ToList().IndexOf(Id);
             if (i == -1)
                 return false;
             threads.RemoveAt(i);

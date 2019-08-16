@@ -104,7 +104,7 @@ namespace Forum
             app.UseStaticFiles();
             app.UseCookiePolicy();
 
-
+            app.UseAuthentication();
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
@@ -113,7 +113,7 @@ namespace Forum
             });
             
             ConfigureRolesAsync(serviceProvider).Wait();
-            (serviceProvider.GetRequiredService<IDatabaseCache>() as DataBaseCache).Init(DbContext);
+            (serviceProvider.GetRequiredService<IDatabaseCache>() as DataBaseCache).InitForumThreads(DbContext);
             (serviceProvider.GetRequiredService<IDatabaseCache>() as DataBaseCache).RefreshSubForums(DbContext);
         }
 

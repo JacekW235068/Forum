@@ -56,6 +56,7 @@ namespace Forum.Controllers
             var response = _tokenGenerator.StandardRefreshToken();
             appuser.RefreshTokens.Add(response);
             await _forumDbContext.SaveChangesAsync();
+            await _signInManager.SignInAsync(appuser, false);
             return Json(new {
                 AccessToken = _tokenGenerator.StandardAccessToken(appuser, await roles),
                 RefreshToken = response.Token
@@ -92,20 +93,22 @@ namespace Forum.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> RefreshTokenAsync(string access, string refresh)
+        [Route("RefreshToken")]
+        public async Task<IActionResult> RefreshTokenAsync([FromForm]string access, [FromForm]string refresh)
         {
 
             JwtSecurityToken accessToken;
             var handler = new JwtSecurityTokenHandler();
+            string id;
             try
             {
                 accessToken = handler.ReadJwtToken(access);
+               id = accessToken.Claims.FirstOrDefault(x => x.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier").Value;
             }
             catch
             {
                 return BadRequest("Bad Token");
             }
-            var id = accessToken.Claims.FirstOrDefault(x => x.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier").Value;
             var user = _forumDbContext.Users.FirstOrDefault(x => x.Id == id);
             if (user == null)
                 return BadRequest("Not Longer a member");

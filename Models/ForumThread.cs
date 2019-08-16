@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -26,7 +27,9 @@ namespace Forum.Models
         //Relations
         public AppUser User { get; set; }
         public List<Post> Comments { get; set; }
+        public Guid ParentID { get; set; }
         [Required]
+        [ForeignKey("ParentID")]
         public SubForum ParentForum { get; set; }
     }
 }

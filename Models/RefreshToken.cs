@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 
 namespace Forum.Models
 {
-    //TODO: change model to contain foreign kye
     public class RefreshToken
     {
         [Key]

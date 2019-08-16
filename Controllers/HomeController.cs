@@ -44,6 +44,7 @@ namespace Forum.Controllers
         [HttpPost]
         public IActionResult useraction()
         {
+            
             return Ok();
         }
 

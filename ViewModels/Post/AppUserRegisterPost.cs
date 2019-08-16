@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Forum.ViewModels
 {
-    //TODO: Update Requirements
+    
     public class AppUserRegisterPost
     {
         [Required]

@@ -9,8 +9,9 @@ namespace Forum.Services
 {
     public interface IDatabaseCache
     {
-        IReadOnlyCollection<ForumThread> Threads { get; }
+        IReadOnlyCollection<ForumThreadGet> Threads { get; }
         IReadOnlyCollection<SubForumGet> SubForums { get; }
+        int MaxThreads { get; }
         void AddThread(ForumThread thread);
         bool DeleteThread(string Id);
         void RefreshSubForums(ForumDbContext context);
