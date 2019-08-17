@@ -105,7 +105,7 @@ namespace Forum.Controllers
                 id = accessToken.Claims.FirstOrDefault(x => x.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier").Value;
             }
             catch { return BadRequest("Bad Token"); }
-            var thread = _forumDbContext.Threads.Include(x=> x.User).Where(x => x.ThreadID == Guid.Parse(threadID)).FirstOrDefaultAsync();
+            var thread = _forumDbContext.Threads.Include(x=> x.User).FirstOrDefaultAsync(x => x.ThreadID == Guid.Parse(threadID));
             switch (role)
             {
                 case "Admin":

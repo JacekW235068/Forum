@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 
 namespace Forum.Services
 {
-    //TODO: Change ForumThreads to viewmodels
     public class DataBaseCache : IDatabaseCache
     {
         private readonly List<SubForumGet> subForums;
