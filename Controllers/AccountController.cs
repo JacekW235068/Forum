@@ -38,8 +38,7 @@ namespace Forum.Controllers
         [Route("Register")]
         public async Task<IActionResult> RegisterAsync([FromForm]AppUserRegisterPost user)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
-                //return BadRequest(JsonParser.Parse(ModelState));
+            //if (!ModelState.IsValid) return BadRequest(ModelState);
             var appuser = new AppUser()
             {
                 Email = user.Email,
@@ -50,53 +49,44 @@ namespace Forum.Controllers
                 return BadRequest(createResult.Errors);
             }
             await _userManager.AddToRoleAsync(appuser, "NormalUser");
-            var roles = _userManager.GetRolesAsync(appuser);
+            var roles = await _userManager.GetRolesAsync(appuser);
             appuser = _forumDbContext.Users.Include(x => x.RefreshTokens)
-                .FirstOrDefault(x => x.Email == appuser.Email && x.UserName == appuser.UserName);
+                .FirstOrDefault(x => x.Email == appuser.Email);
             var response = _tokenGenerator.StandardRefreshToken();
             appuser.RefreshTokens.Add(response);
             await _forumDbContext.SaveChangesAsync();
-            await _signInManager.SignInAsync(appuser, false);
+           // await _signInManager.SignInAsync(appuser, false);
             return Json(new {
-                AccessToken = _tokenGenerator.StandardAccessToken(appuser, await roles),
+                AccessToken = _tokenGenerator.StandardAccessToken(appuser, roles),
                 RefreshToken = response.Token
             });
         }
 
         [HttpPost]
-        public async Task<IActionResult> LoginAsync(AppUserLoginPost user)
+        public async Task<IActionResult> LoginAsync([FromForm]AppUserLoginPost user)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            //if (!ModelState.IsValid) return BadRequest(ModelState);
             var appUser = _forumDbContext.Users.Include(x => x.RefreshTokens)
                 .FirstOrDefault(x => x.Email == user.Email);
-            if (appUser != null)
+            if (appUser == null) return BadRequest(Json(new { Error = "User not found", Lockedout = false }));
+            var signInResult = await _signInManager.PasswordSignInAsync(appUser, user.Password, false, false);
+            if (!signInResult.Succeeded) return BadRequest(Json(new { Error = "Bad login or password", Lockedout = signInResult.IsLockedOut }));
+            var response = _tokenGenerator.StandardRefreshToken();
+            appUser.RefreshTokens.Add(response);
+            var roles = await _userManager.GetRolesAsync(appUser);
+            await _forumDbContext.SaveChangesAsync();
+            return Json(new
             {
-                var signInResult = await _signInManager.PasswordSignInAsync(appUser, user.Password, false, false);
-                if (signInResult.Succeeded) {
-                    var response = _tokenGenerator.StandardRefreshToken();
-                    appUser.RefreshTokens.Add(response);
-                    var roles = await _userManager.GetRolesAsync(appUser);
-                    await _forumDbContext.SaveChangesAsync();
-                    return Json(new
-                    {
-                        AccessToken = _tokenGenerator.StandardAccessToken(appUser, roles),
-                        RefreshToken = response.Token
-                    });
-                   
-                }
-                return BadRequest(Json(new { Error = "Bad login or password", Lockedout = signInResult.IsLockedOut}));
-                
-            }
-            return BadRequest(Json(new { Error = "User not found", Lockedout = false }));
-            
-
+                AccessToken = _tokenGenerator.StandardAccessToken(appUser, roles),
+                RefreshToken = response.Token
+            });
         }
 
         [HttpPost]
         [Route("RefreshToken")]
         public async Task<IActionResult> RefreshTokenAsync([FromForm]string access, [FromForm]string refresh)
         {
-
+            //TODO: Move it into constructor for all controllers
             JwtSecurityToken accessToken;
             var handler = new JwtSecurityTokenHandler();
             string id;

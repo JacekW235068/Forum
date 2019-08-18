@@ -10,7 +10,7 @@ namespace Forum.ViewModels
     public class SubForumPost
     {
         [Required]
-        [StringLength(100, MinimumLength = 5, ErrorMessage = "Name most be between 5 and 100 characters")]
+        [StringLength(100, MinimumLength = 5, ErrorMessage = "Name has to be between 5 and 100 characters long")]
         public string Name { get; set; }
 
         public SubForumPost() { }

@@ -10,7 +10,7 @@ namespace Forum.ViewModels
     public class ForumPost_Post
     {
         [Required]
-        [StringLength(500, MinimumLength = 30, ErrorMessage = "Text has to be between 3 and 500 characters long")]
+        [StringLength(500, MinimumLength = 30, ErrorMessage = "Text has to be between 30 and 500 characters long")]
         public string Text { get; set; }
         [Required]
         public string ParentID { get; set; }
@@ -19,7 +19,7 @@ namespace Forum.ViewModels
             return new Post()
             {
                 Text = post.Text,
-                ParentID = Guid.Parse(post.ParentID);
+                ParentID = Guid.Parse(post.ParentID)
             };
         }
     }

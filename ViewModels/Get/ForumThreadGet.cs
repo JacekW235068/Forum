@@ -17,6 +17,7 @@ namespace Forum.ViewModels
         public DateTime LastPostTime { get; set; }
         public string UserName { get; set; }
         public int Comments { get; set; }
+        public string ParentForumID { get; set; }
 
         public ForumThreadGet() { }
         public ForumThreadGet(ForumThread thread)
@@ -29,6 +30,7 @@ namespace Forum.ViewModels
             if (thread.User != null)
                 UserName = thread.User.UserName;
             Comments = thread.Comments.Count;
+            ParentForumID = thread.ParentID.ToString();
         }
 
         public static implicit operator ForumThreadGet(ForumThread thread)

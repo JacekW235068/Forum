@@ -24,6 +24,8 @@ namespace Forum.Controllers
             _forumDBContext = forumDBContext;
             _databaseCache = databaseCache;
         }
+
+
         [HttpGet]
         public JsonResult GetAllForums()
         {          
@@ -36,7 +38,7 @@ namespace Forum.Controllers
         [HttpPost]
         public IActionResult NewForum(SubForumPost newForum)
         {
-            if (!ModelState.IsValid) BadRequest(ModelState);
+            //if (!ModelState.IsValid) BadRequest(ModelState);
             _forumDBContext.SubForums.Add((SubForum)newForum);
             _forumDBContext.SaveChanges();
             _databaseCache.RefreshSubForums(_forumDBContext);

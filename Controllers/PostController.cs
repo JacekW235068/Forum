@@ -24,15 +24,19 @@ namespace Forum.Controllers {
             _forumDbContext = forumDbContext;
             _databaseCache = databaseCache;
         }
+
+
         [HttpGet]
         public IActionResult GetPosts(string threadID, int start, int amount)
         {
-           var posts = new List<ForumPostGet>();
-            foreach (var x in _forumDbContext.Posts.Where(x => x.ParentID.ToString() == threadID).Skip(start).Take(amount))
-                posts.Add(x);
+            var postViewModels = new List<ForumPostGet>();
+            var posts = _forumDbContext.Posts.Where(x => x.ParentID.ToString() == threadID).Skip(start).Take(amount);
+            if (posts == null) return NotFound();
+            foreach (var x in posts)
+                postViewModels.Add(x);
             return Json(new
             {
-                posts
+                postViewModels
             });
         }
 
@@ -59,7 +63,7 @@ namespace Forum.Controllers {
             if (newPost.User == null) return Unauthorized();
             _forumDbContext.Posts.Add(newPost);
             _forumDbContext.SaveChanges();
-            _databaseCache.AddThread(newPost.ParentThread);//needs special attention
+            _databaseCache.AddThread(newPost.ParentThread);
             return Ok();
         }
 
@@ -67,6 +71,7 @@ namespace Forum.Controllers {
         [HttpDelete]
         public IActionResult DeletePost(string postID)
         {
+            //get user info from access token
             JwtSecurityToken accessToken;
             var handler = new JwtSecurityTokenHandler();
             string role;
@@ -98,7 +103,7 @@ namespace Forum.Controllers {
                         _forumDbContext.SaveChanges();
                         return Ok();
                     }
-                    return NotFound("Thread does no longer exist");
+                    return NotFound("Post does no longer exist");
                 default:
                     return Unauthorized();
             }

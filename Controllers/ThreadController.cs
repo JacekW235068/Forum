@@ -67,7 +67,7 @@ namespace Forum.Controllers
 
         [Authorize]
         [HttpPost]
-        public IActionResult NewThread(ForumThreadPost threadPost)
+        public IActionResult NewThread(ForumThreadPost thread)
         {
             //get user info from access token
             JwtSecurityToken accessToken;
@@ -80,13 +80,16 @@ namespace Forum.Controllers
             }
             catch { return BadRequest("Bad Token"); }
 
-            var thread = (ForumThread)threadPost;
-            thread.User = new AppUser() { Id = id };
-            thread.LastPostTime = DateTime.Now;
-            thread.PostTime = DateTime.Now;
-            _forumDbContext.Threads.Add(thread);
+            var newThread = (ForumThread)thread;
+            newThread.User = _forumDbContext.Users.FirstOrDefault(x => x.Id == id);
+            newThread.ParentForum = _forumDbContext.SubForums.FirstOrDefault(x => x.SubForumID == newThread.ParentID);
+            if (newThread.User == null) return Unauthorized();
+            if (newThread.ParentForum == null) return NotFound("Forum Not Found");
+            newThread.LastPostTime = DateTime.Now;
+            newThread.PostTime = DateTime.Now;
+            _forumDbContext.Threads.Add(newThread);
             _forumDbContext.SaveChanges();
-            _databaseCache.AddThread(thread);//needs special attention
+            _databaseCache.AddThread(newThread);//needs special attention
             return Ok();
         }
 
@@ -105,6 +108,7 @@ namespace Forum.Controllers
                 id = accessToken.Claims.FirstOrDefault(x => x.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier").Value;
             }
             catch { return BadRequest("Bad Token"); }
+
             var thread = _forumDbContext.Threads.Include(x=> x.User).FirstOrDefaultAsync(x => x.ThreadID == Guid.Parse(threadID));
             switch (role)
             {
