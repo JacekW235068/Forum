@@ -33,12 +33,12 @@ namespace Forum
         public void ConfigureServices(IServiceCollection services)
         {
 
-            
+
             services.AddDbContext<ForumDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"))
             );
-           
-            services.AddIdentity<AppUser, IdentityRole>( options => {
+
+            services.AddIdentity<AppUser, IdentityRole>(options => {
                 //Password
                 options.Password.RequireDigit = true;
                 options.Password.RequiredLength = 6;
@@ -48,8 +48,8 @@ namespace Forum
                 options.Password.RequireUppercase = false;
                 //Email
                 options.User.RequireUniqueEmail = true;
-                
-                
+
+
             })
                 .AddEntityFrameworkStores<ForumDbContext>()
                 .AddDefaultTokenProviders();
@@ -72,11 +72,11 @@ namespace Forum
                     ClockSkew = TimeSpan.Zero
                 };
             });
-        
 
-            services.AddSingleton<IDatabaseCache>(sp => 
+
+            services.AddSingleton<IDatabaseCache>(sp =>
             (IDatabaseCache)new DataBaseCache(Convert.ToInt32(Configuration["PostsInCache"])));
-            services.AddScoped<ITokenFactory>(sp => 
+            services.AddScoped<ITokenFactory>(sp =>
             (ITokenFactory)new TokenGenerator(Configuration["JwtKey"], Convert.ToDouble(Configuration["JwtExpireDays"]),
             Configuration["JwtIssuer"], Convert.ToDouble(Configuration["RefreshExpireDays"])));
 
@@ -99,7 +99,7 @@ namespace Forum
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
-            
+
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseCookiePolicy();
@@ -111,7 +111,7 @@ namespace Forum
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
-            
+
             ConfigureRolesAsync(serviceProvider).Wait();
             (serviceProvider.GetRequiredService<IDatabaseCache>() as DataBaseCache).InitForumThreads(DbContext);
             (serviceProvider.GetRequiredService<IDatabaseCache>() as DataBaseCache).RefreshSubForums(DbContext);
@@ -136,7 +136,8 @@ namespace Forum
             var superUser = await _userManager.FindByEmailAsync(Configuration["AdminEmail"]);
             if (superUser == null)
             {
-                var result = await _userManager.CreateAsync(new AppUser() {
+                var result = await _userManager.CreateAsync(new AppUser()
+                {
                     UserName = Configuration["AdminName"],
                     Email = Configuration["AdminEmail"]
                 }, Configuration["AdminPass"]);

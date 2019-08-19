@@ -38,7 +38,6 @@ namespace Forum.Controllers
         [Route("Register")]
         public async Task<IActionResult> RegisterAsync([FromForm]AppUserRegisterPost user)
         {
-            //if (!ModelState.IsValid) return BadRequest(ModelState);
             var appuser = new AppUser()
             {
                 Email = user.Email,
@@ -55,7 +54,7 @@ namespace Forum.Controllers
             var response = _tokenGenerator.StandardRefreshToken();
             appuser.RefreshTokens.Add(response);
             await _forumDbContext.SaveChangesAsync();
-           // await _signInManager.SignInAsync(appuser, false);
+            await _signInManager.SignInAsync(appuser, false);
             return Json(new {
                 AccessToken = _tokenGenerator.StandardAccessToken(appuser, roles),
                 RefreshToken = response.Token
@@ -63,14 +62,14 @@ namespace Forum.Controllers
         }
 
         [HttpPost]
+        [Route("Login")]
         public async Task<IActionResult> LoginAsync([FromForm]AppUserLoginPost user)
-        {
-            //if (!ModelState.IsValid) return BadRequest(ModelState);
+        { 
             var appUser = _forumDbContext.Users.Include(x => x.RefreshTokens)
                 .FirstOrDefault(x => x.Email == user.Email);
             if (appUser == null) return BadRequest(Json(new { Error = "User not found", Lockedout = false }));
-            var signInResult = await _signInManager.PasswordSignInAsync(appUser, user.Password, false, false);
-            if (!signInResult.Succeeded) return BadRequest(Json(new { Error = "Bad login or password", Lockedout = signInResult.IsLockedOut }));
+            var signInResult = await _signInManager.PasswordSignInAsync(appUser, user.Password, false, true);
+            if (!signInResult.Succeeded) return BadRequest(Json(new { Error = "Login failed", Lockedout = signInResult.IsLockedOut }));
             var response = _tokenGenerator.StandardRefreshToken();
             appUser.RefreshTokens.Add(response);
             var roles = await _userManager.GetRolesAsync(appUser);
