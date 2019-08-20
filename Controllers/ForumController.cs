@@ -8,6 +8,7 @@ using Forum.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Forum.Controllers
 {
@@ -15,9 +16,9 @@ namespace Forum.Controllers
     [ApiController]
     public class ForumController : Controller
     {
-        
+
         private readonly ForumDbContext _forumDBContext;
-        private readonly IDatabaseCache _databaseCache; 
+        private readonly IDatabaseCache _databaseCache;
 
         public ForumController(ForumDbContext forumDBContext, IDatabaseCache databaseCache)
         {
@@ -27,30 +28,46 @@ namespace Forum.Controllers
 
 
         [HttpGet]
+        [Route("AllForums")]
         public JsonResult GetAllForums()
-        {          
+        {
             return Json(new {
                 _databaseCache.SubForums
-            });    
+            });
         }
 
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         [HttpPost]
-        public IActionResult NewForum(SubForumPost newForum)
+        [Route("New")]
+        public IActionResult NewForum([FromForm]SubForumPost Forum)
         {
-            //if (!ModelState.IsValid) BadRequest(ModelState);
-            _forumDBContext.SubForums.Add((SubForum)newForum);
+            if (_forumDBContext.SubForums.FirstOrDefault(x => x.Name == Forum.Name) != null) return BadRequest("Name is not unique");
+            var newForum = (SubForum)Forum;
+            _forumDBContext.SubForums.Add(newForum);
             _forumDBContext.SaveChanges();
             _databaseCache.RefreshSubForums(_forumDBContext);
-            return Ok();
+            newForum.Threads = new List<ForumThread>();
+            SubForumGet Result = newForum;
+            return Ok(Json(Result));
         }
 
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         [HttpDelete]
-        public IActionResult DeleteForum(string ID)
+        [Route("Delete")]
+        public IActionResult DeleteForum([FromForm]string ID)
         {
+            Guid guid;
+            if (!Guid.TryParse(ID, out guid))
+                return BadRequest("Wrong Format");
             _forumDBContext.SubForums.Remove(new SubForum() { SubForumID = Guid.Parse(ID)});
-            _forumDBContext.SaveChanges();
+            try
+            {
+                _forumDBContext.SaveChanges();
+            }
+            catch
+            {
+                return BadRequest("ID does not exist in Database");
+            }
             _databaseCache.RefreshSubForums(_forumDBContext);
             return Ok();
         }

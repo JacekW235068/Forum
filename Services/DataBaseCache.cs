@@ -1,5 +1,6 @@
 ﻿using Forum.Models;
 using Forum.ViewModels;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections.Generic;
@@ -59,7 +60,7 @@ namespace Forum.Services
         public void RefreshSubForums(ForumDbContext context)
         {
             subForums.Clear();
-            foreach (var sub in context.SubForums)
+            foreach (var sub in context.SubForums.Include(x=>x.Threads))
             {
                 subForums.Add(sub);
             }
