@@ -30,7 +30,7 @@ namespace Forum.ViewModels
             if (thread.User != null)
                 UserName = thread.User.UserName;
             Comments = thread.Comments.Count;
-            ParentForumID = thread.ParentID.ToString();
+            //ParentForumID = thread.ParentID.ToString();
         }
 
         public static implicit operator ForumThreadGet(ForumThread thread)

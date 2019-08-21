@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Forum.ViewModels
 {
-    //TODO: Update Requirements, add Remote Validatoin and custom validation for password
+    //TODO: Update Requirements
     public class AppUserLoginPost
     {
         [Required]

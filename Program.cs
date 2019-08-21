@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Forum
 {
-    //TODO: Add Catching errors
+    //TODO: Add JSON response generator
     public class Program
     {
         public static void Main(string[] args)

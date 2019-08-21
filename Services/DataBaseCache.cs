@@ -30,7 +30,7 @@ namespace Forum.Services
         public void InitForumThreads(ForumDbContext context)
         {
             threads.Clear();
-            foreach (var t in context.Threads.OrderByDescending(x => x.LastPostTime).Take(maxThreads).ToList())
+            foreach (var t in context.Threads.Include(x=>x.Comments).Include(x=>x.User).OrderByDescending(x => x.LastPostTime).Take(maxThreads).ToList())
                 threads.Add(t);
         }
         public void AddThread(ForumThread thread)
