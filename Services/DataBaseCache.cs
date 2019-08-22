@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace Forum.Services
 {
+    //TODO: Add updating Thread
     public class DataBaseCache : IDatabaseCache
     {
         private readonly List<SubForumGet> subForums;
@@ -40,13 +41,10 @@ namespace Forum.Services
                 thread.Text == null)
                 throw new NullReferenceException();
 
-            var i = threads.Select(x => x.ID).ToList().IndexOf(thread.ThreadID.ToString());
-            if(threads.Count == maxThreads)
-                if (i == -1)
+            
+            if(threads.Count == maxThreads)               
                     threads.RemoveAt(maxThreads - 1);
-                else
-                    threads.RemoveAt(i);
-            threads.Add(thread);
+            threads.Insert(0,thread);
         }
         public bool DeleteThread(string Id)
         {
@@ -64,6 +62,24 @@ namespace Forum.Services
             {
                 subForums.Add(sub);
             }
+        }
+
+        public bool UpdateThread(string threadID, int postCount)
+        {
+            foreach(var thread in threads) 
+                if(thread.ID == threadID)
+                {
+                    thread.Comments += postCount;
+                    if (postCount > 0)
+                    {
+                        thread.LastPostTime = DateTime.Now;
+                        threads.Remove(thread);
+                        threads.Insert(0, thread);
+                        
+                    }
+                    return true;
+                }
+            return false;
         }
     }
 }

@@ -13,6 +13,7 @@ namespace Forum.Services
         IReadOnlyCollection<SubForumGet> SubForums { get; }
         int MaxThreads { get; }
         void AddThread(ForumThread thread);
+        bool UpdateThread(string threadID, int postCount);
         bool DeleteThread(string Id);
         void RefreshSubForums(ForumDbContext context);
         
