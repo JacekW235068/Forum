@@ -69,8 +69,6 @@ namespace Forum.Services
             {
                 Token = token,
                 ExpirationDate = DateTime.Now.AddDays(RefreshExpirationDate)
-                //Check if needs user
-
             };
         }
 

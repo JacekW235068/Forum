@@ -116,7 +116,9 @@ namespace Forum
             (serviceProvider.GetRequiredService<IDatabaseCache>() as DataBaseCache).InitForumThreads(DbContext);
             (serviceProvider.GetRequiredService<IDatabaseCache>() as DataBaseCache).RefreshSubForums(DbContext);
         }
-
+        /// <summary>
+        /// Configure Roles For application and create Superuser based on configuration file
+        /// </summary>
         private async Task ConfigureRolesAsync(IServiceProvider serviceProvider)
         {
             var _roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();

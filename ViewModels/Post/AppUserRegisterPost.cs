@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Forum.Models;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -6,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Forum.ViewModels
 {
-    
+
     public class AppUserRegisterPost
     {
         [Required]
@@ -18,6 +19,11 @@ namespace Forum.ViewModels
         [Required]
         [EmailAddress]
         public string Email { get; set; }
+
+        public static explicit operator AppUser(AppUserRegisterPost user)
+        {
+            return new AppUser(user);
+        }
     }
 }
 public class UserNameAttribute : ValidationAttribute

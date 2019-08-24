@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Forum.Models;
 using Forum.Services;
@@ -27,16 +28,15 @@ namespace Forum.Controllers
 
         [HttpGet]
         [Route("Threads")]
-        public IActionResult GetThreads([FromForm]string subForumID, [FromForm]int start, [FromForm]int amount)
+        public IActionResult GetThreads([FromForm]string subForumID, [FromForm]uint start, [FromForm]uint amount)
         {
-            //TODO: change model to contain number of comments
             Guid guid;
             if (!Guid.TryParse(subForumID, out guid))
                 return BadRequest("Wrong Format");
-            if (start < 0 || amount < 1) return BadRequest("Invalid argument");
+            if (amount == 0) return BadRequest("Invalid argument");
             List<ForumThreadGet> threads = new List<ForumThreadGet>();
             foreach (var x in _forumDbContext.Threads.Where(x => x.ParentID == guid)
-                .Include(x=>x.User).Include(x=>x.Comments).Skip(start).Take(amount))
+                .Include(x=>x.User).Skip((int)start).Take((int)amount))
                 threads.Add(x);
             return Json(new
             {
@@ -46,18 +46,11 @@ namespace Forum.Controllers
 
         [HttpGet]
         [Route("Recent")]
-        public IActionResult GetRecentThreads([FromForm]int start, [FromForm]int amount)
+        public IActionResult GetRecentThreads([FromForm]uint start, [FromForm]uint amount)
         {
-            if (start < 0 || amount < 1) return BadRequest("Invalid argument");
+            if (amount == 0) return BadRequest("Invalid argument");
             List<ForumThreadGet> threads = new List<ForumThreadGet>();
-            //TODO: this logic should be in cache but it isn't  ¯\_(ツ)_/¯
-            if (start + amount >= _databaseCache.MaxThreads)
-                foreach (var x in _forumDbContext.Threads.OrderByDescending(x => x.LastPostTime)
-                    .Skip(start).Take(amount)
-                    .Include(x=>x.Comments).Include(x => x.User))
-                    threads.Add(x);
-            else
-               threads.AddRange(_databaseCache.Threads.Skip(start).Take(amount));
+            threads.AddRange(_databaseCache.GetThreads(_forumDbContext, start, amount));
             return Json(new
             {
                 threads
@@ -67,15 +60,15 @@ namespace Forum.Controllers
         [Authorize]
         [HttpGet]
         [Route("UserThreads")]
-        public IActionResult GetUserThreads([FromForm]string userName, [FromForm]int start, [FromForm]int amount)
+        public IActionResult GetUserThreads([FromForm]string userName, [FromForm]uint start, [FromForm]uint amount)
         {
-            if (start < 0 || amount < 1) return BadRequest("Invalid argument");
+            if (amount == 0) return BadRequest("Invalid argument");
             var user = _forumDbContext.Users.Where(x => x.UserName == userName).FirstOrDefault();
             if (user == null) return NotFound("User No longer Exists");
             var threads = new List<ForumThreadGet>();
             foreach (var x in _forumDbContext.Threads.Where(x => x.User == user)
-                .Skip(start).Take(amount)
-                .Include(x => x.Comments).Include(x => x.User))
+                .Skip((int)start).Take((int)amount)
+                .Include(x => x.User))
                 threads.Add(x);
             return Json(threads);
         }
@@ -109,7 +102,7 @@ namespace Forum.Controllers
             _forumDbContext.Threads.Add(newThread);
             _forumDbContext.SaveChanges();
             newThread.Comments = new List<Post>();
-            _databaseCache.AddThread(newThread);//needs special attention
+            _databaseCache.AddThread(newThread);
             return Ok(newThread.ThreadID);
         }
 
@@ -120,14 +113,14 @@ namespace Forum.Controllers
         {
             JwtSecurityToken accessToken;
             var handler = new JwtSecurityTokenHandler();
-            string role;
+            IEnumerable<string> roles;
             string id;
             try
             {
                 var trimmedToken = Request.Headers["Authorization"].ToString();
                 trimmedToken = trimmedToken.Substring(7);
                 accessToken = handler.ReadJwtToken(trimmedToken);
-                role = accessToken.Claims.FirstOrDefault(x => x.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role").Value;
+                roles = accessToken.Claims.Where(x => x.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role").Select(x=>x.Value);
                 id = accessToken.Claims.FirstOrDefault(x => x.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier").Value;
             }
             catch { return BadRequest("Bad Token"); }
@@ -136,27 +129,27 @@ namespace Forum.Controllers
                 return BadRequest("Wrong Format");
             var thread = await _forumDbContext.Threads.Include(x=> x.User).FirstOrDefaultAsync(x => x.ThreadID == guid);
             if (thread == null) NotFound("Thread does no longer exist");
-            
-                switch (role)
+            if (roles.Contains("Admin"))
             {
-                case "Admin":
-
-                        _databaseCache.DeleteThread(thread.ThreadID.ToString());
-                        _forumDbContext.Threads.Remove(thread);
-                        _forumDbContext.SaveChanges();
-                        
-                        return Ok();
-                case "NormalUser":
+                _databaseCache.DeleteThread(thread.ThreadID.ToString());
+                _forumDbContext.Threads.Remove(thread);
+                _forumDbContext.SaveChanges();
+                return Ok();
+            }
+            if (roles.Contains("NormalUser"))
+            {
+                if (thread.User.Id != accessToken.Claims.FirstOrDefault(y => y.Type == ClaimTypes.NameIdentifier).Value) return Unauthorized();
+                _forumDbContext.Threads.Remove(thread);
+                _forumDbContext.SaveChanges();
+                return Ok();
+            }
+            return Unauthorized();
                     
                    
-                        if (thread.User.Id != id) return Unauthorized(); 
-                        _forumDbContext.Threads.Remove(thread);
-                        _forumDbContext.SaveChanges();
-                        return Ok();
+                        
                     
-                default:
-                    return Unauthorized();
-            }
+                
+            
         }
 
 

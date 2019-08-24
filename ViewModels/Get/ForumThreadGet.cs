@@ -13,7 +13,6 @@ namespace Forum.ViewModels
         public string Title { get; set; }
         public string Text { get; set; }
         public DateTime PostTime { get; set; }
-        //TODO: Set format underestandable for JSON
         public DateTime LastPostTime { get; set; }
         public string UserName { get; set; }
         public int Comments { get; set; }
@@ -29,8 +28,7 @@ namespace Forum.ViewModels
             LastPostTime = thread.LastPostTime;
             if (thread.User != null)
                 UserName = thread.User.UserName;
-            Comments = thread.Comments.Count;
-            //ParentForumID = thread.ParentID.ToString();
+            Comments = thread.NumberOfComments;
         }
 
         public static implicit operator ForumThreadGet(ForumThread thread)

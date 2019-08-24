@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 
 namespace Forum.Services
 {
-    //TODO: Add updating Thread
     public class DataBaseCache : IDatabaseCache
     {
         private readonly List<SubForumGet> subForums;
@@ -18,6 +17,7 @@ namespace Forum.Services
         public IReadOnlyCollection<ForumThreadGet> Threads { get {
                 return threads;
             } }
+        
         public int MaxThreads { get { return maxThreads; } }
         public IReadOnlyCollection<SubForumGet> SubForums { get { return subForums.AsReadOnly(); } }
        
@@ -28,12 +28,43 @@ namespace Forum.Services
             threads = new List<ForumThreadGet>();
         }
               
+        /// <summary>
+        /// Fetch most popular threads from database
+        /// </summary>
+        /// <param name="context">Context of database used for fetching</param>
         public void InitForumThreads(ForumDbContext context)
         {
             threads.Clear();
             foreach (var t in context.Threads.Include(x=>x.Comments).Include(x=>x.User).OrderByDescending(x => x.LastPostTime).Take(maxThreads).ToList())
                 threads.Add(t);
         }
+
+        /// <summary>
+        /// Fetch SUbForums from database
+        /// </summary>
+        /// <param name="context">Context of database used for fetching</param>
+        public void RefreshSubForums(ForumDbContext context)
+        {
+            subForums.Clear();
+            foreach (var sub in context.SubForums.Include(x => x.Threads))
+            {
+                subForums.Add(sub);
+            }
+        }
+
+        public IReadOnlyCollection<ForumThreadGet> GetThreads(ForumDbContext context, uint start, uint amount)
+        {
+            List<ForumThreadGet> result = new List<ForumThreadGet>();
+            if (start + amount >= maxThreads)
+                foreach (var x in context.Threads.OrderByDescending(x => x.LastPostTime)
+                    .Skip((int)start).Take((int)amount)
+                    .Include(x => x.Comments).Include(x => x.User))
+                    result.Add(x);
+            else
+                result.AddRange(threads.Skip((int)start).Take((int)amount));
+            return result;
+        }
+
         public void AddThread(ForumThread thread)
         {
             if (thread.ThreadID == null ||
@@ -55,14 +86,7 @@ namespace Forum.Services
             return true;
         }
 
-        public void RefreshSubForums(ForumDbContext context)
-        {
-            subForums.Clear();
-            foreach (var sub in context.SubForums.Include(x=>x.Threads))
-            {
-                subForums.Add(sub);
-            }
-        }
+    
 
         public bool UpdateThread(string threadID, int postCount)
         {
