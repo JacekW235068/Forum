@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Forum.Models;
 using Forum.Services;
@@ -27,10 +28,15 @@ namespace Forum.Controllers {
 
 
         [HttpGet]
-        public IActionResult GetPosts(string threadID, int start, int amount)
+        [Route("Posts")]
+        public IActionResult GetPosts([FromForm]string threadID, [FromForm]uint start, [FromForm]uint amount)
         {
+            Guid guid;
+            if (!Guid.TryParse(threadID, out guid))
+                return BadRequest("Wrong Format");
+            if (amount == 0) return BadRequest("Invalid argument");
             var postViewModels = new List<ForumPostGet>();
-            var posts = _forumDbContext.Posts.Where(x => x.ParentID.ToString() == threadID).Skip(start).Take(amount);
+            var posts = _forumDbContext.Posts.Where(x => x.ParentID == guid).OrderBy(x=>x.PostTime).Skip((int)start).Take((int)amount).Include(x=>x.User);
             if (posts == null) return NotFound();
             foreach (var x in posts)
                 postViewModels.Add(x);
@@ -42,7 +48,8 @@ namespace Forum.Controllers {
 
         [Authorize]
         [HttpPost]
-        public IActionResult NewPost(ForumPost_Post post)
+        [Route("New")]
+        public IActionResult NewPost([FromForm]ForumPost_Post post)
         {
             //get user info from access token
             JwtSecurityToken accessToken;
@@ -50,63 +57,67 @@ namespace Forum.Controllers {
             string id;
             try
             {
-                accessToken = handler.ReadJwtToken(Request.Headers["Authorization"]);
+                var trimmedToken = Request.Headers["Authorization"].ToString();
+                trimmedToken = trimmedToken.Substring(7);
+                accessToken = handler.ReadJwtToken(trimmedToken);
                 id = accessToken.Claims.FirstOrDefault(x => x.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier").Value;
             }
             catch { return BadRequest("Bad Token"); }
-
+            if (!Guid.TryParse(post.ParentID, out _))
+                return BadRequest("Wrong Format");
             var newPost = (Post)post;
             newPost.User = _forumDbContext.Users.FirstOrDefault(x => x.Id == id);
             newPost.ParentThread = _forumDbContext.Threads.FirstOrDefault(x => x.ThreadID == newPost.ParentID);
             newPost.PostTime = DateTime.Now;
             if (newPost.ParentThread == null) return NotFound("thread does not exist");
             if (newPost.User == null) return Unauthorized();
+            newPost.ParentThread.LastPostTime = DateTime.Now;
+            newPost.ParentThread.NumberOfComments++;
             _forumDbContext.Posts.Add(newPost);
             _forumDbContext.SaveChanges();
-            _databaseCache.AddThread(newPost.ParentThread);
-            return Ok();
+            _databaseCache.UpdateThread(newPost.ParentID.ToString(), 1);
+            return Ok(newPost.PostID);
         }
 
         [Authorize]
         [HttpDelete]
-        public IActionResult DeletePost(string postID)
+        [Route("Delete")]
+        public IActionResult DeletePost([FromForm]string postID)
         {
             //get user info from access token
             JwtSecurityToken accessToken;
             var handler = new JwtSecurityTokenHandler();
-            string role;
+            IEnumerable<string> role;
             string id;
             try
             {
-                accessToken = handler.ReadJwtToken(Request.Headers["Authorization"]);
-                role = accessToken.Claims.FirstOrDefault(x => x.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role").Value;
-                id = accessToken.Claims.FirstOrDefault(x => x.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier").Value;
+                var trimmedToken = Request.Headers["Authorization"].ToString();
+                trimmedToken = trimmedToken.Substring(7);
+                accessToken = handler.ReadJwtToken(trimmedToken);
+                role = accessToken.Claims.Where(x => x.Type == ClaimTypes.Role).Select(x=>x.Value);
+                id = accessToken.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier).Value;
             }
             catch { return BadRequest("Bad Token"); }
-            var post = _forumDbContext.Posts.Include(x => x.User).FirstOrDefault(x => x.PostID.ToString() == postID);
-            switch (role)
-            {
-                case "Admin":
-                    if (post != null)
-                    {
-                        _forumDbContext.Posts.Remove(post);
-                        _forumDbContext.SaveChanges();
-                        return Ok();
-                    }
-                    return NotFound("Post does no longer exist");
-                case "NormalUser":
+            var post = _forumDbContext.Posts.Include(x => x.User).Include(x=>x.ParentThread).FirstOrDefault(x => x.PostID.ToString() == postID);
+            if (post == null) return NotFound("Post does no longer exist");
+            if (role.Contains("Admin")) {
+                _forumDbContext.Posts.Remove(post);
+                post.ParentThread.NumberOfComments--;
 
-                    if (post != null)
-                    {
-                        if (post.User.Id != id) return Unauthorized();
-                        _forumDbContext.Posts.Remove(post);
-                        _forumDbContext.SaveChanges();
-                        return Ok();
-                    }
-                    return NotFound("Post does no longer exist");
-                default:
-                    return Unauthorized();
+                _forumDbContext.SaveChanges();
+                _databaseCache.UpdateThread(post.ParentID.ToString(), -1);
+                return Ok();
             }
+            if (role.Contains("NormalUser")) {
+                if (post.User.Id != id) return Unauthorized();
+                post.ParentThread.NumberOfComments--;
+                _forumDbContext.Posts.Remove(post);
+                _forumDbContext.SaveChanges();
+                _databaseCache.UpdateThread(post.ParentID.ToString(), -1);
+                return Ok();
+            }
+                    return Unauthorized();
+            
         }
 
 

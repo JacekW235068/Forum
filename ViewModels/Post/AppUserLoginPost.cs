@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Forum.ViewModels
 {
-    //TODO: Update Requirements, add Remote Validatoin and custom validation for password
+    //TODO: Update Requirements
     public class AppUserLoginPost
     {
         [Required]
@@ -15,7 +15,6 @@ namespace Forum.ViewModels
         [Required]
         [EmailAddress]
         public string Email { get; set; }
-
     }
 }
 
@@ -29,7 +28,7 @@ public class PasswordAttribute : ValidationAttribute
         object value, ValidationContext validationContext)
     {
         var v = value as string;
-        if(v != null)
+        if (v != null)
         {
             if (v.Any(char.IsDigit))
                 return ValidationResult.Success;

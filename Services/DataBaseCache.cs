@@ -1,5 +1,6 @@
 ﻿using Forum.Models;
 using Forum.ViewModels;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections.Generic;
@@ -16,6 +17,7 @@ namespace Forum.Services
         public IReadOnlyCollection<ForumThreadGet> Threads { get {
                 return threads;
             } }
+        
         public int MaxThreads { get { return maxThreads; } }
         public IReadOnlyCollection<SubForumGet> SubForums { get { return subForums.AsReadOnly(); } }
        
@@ -26,12 +28,43 @@ namespace Forum.Services
             threads = new List<ForumThreadGet>();
         }
               
+        /// <summary>
+        /// Fetch most popular threads from database
+        /// </summary>
+        /// <param name="context">Context of database used for fetching</param>
         public void InitForumThreads(ForumDbContext context)
         {
             threads.Clear();
-            foreach (var t in context.Threads.OrderByDescending(x => x.LastPostTime).Take(maxThreads).ToList())
+            foreach (var t in context.Threads.Include(x=>x.Comments).Include(x=>x.User).OrderByDescending(x => x.LastPostTime).Take(maxThreads).ToList())
                 threads.Add(t);
         }
+
+        /// <summary>
+        /// Fetch SUbForums from database
+        /// </summary>
+        /// <param name="context">Context of database used for fetching</param>
+        public void RefreshSubForums(ForumDbContext context)
+        {
+            subForums.Clear();
+            foreach (var sub in context.SubForums.Include(x => x.Threads))
+            {
+                subForums.Add(sub);
+            }
+        }
+
+        public IReadOnlyCollection<ForumThreadGet> GetThreads(ForumDbContext context, uint start, uint amount)
+        {
+            List<ForumThreadGet> result = new List<ForumThreadGet>();
+            if (start + amount >= maxThreads)
+                foreach (var x in context.Threads.OrderByDescending(x => x.LastPostTime)
+                    .Skip((int)start).Take((int)amount)
+                    .Include(x => x.Comments).Include(x => x.User))
+                    result.Add(x);
+            else
+                result.AddRange(threads.Skip((int)start).Take((int)amount));
+            return result;
+        }
+
         public void AddThread(ForumThread thread)
         {
             if (thread.ThreadID == null ||
@@ -39,13 +72,10 @@ namespace Forum.Services
                 thread.Text == null)
                 throw new NullReferenceException();
 
-            var i = threads.Select(x => x.ID).ToList().IndexOf(thread.ThreadID.ToString());
-            if(threads.Count == maxThreads)
-                if (i == -1)
+            
+            if(threads.Count == maxThreads)               
                     threads.RemoveAt(maxThreads - 1);
-                else
-                    threads.RemoveAt(i);
-            threads.Add(thread);
+            threads.Insert(0,thread);
         }
         public bool DeleteThread(string Id)
         {
@@ -56,13 +86,24 @@ namespace Forum.Services
             return true;
         }
 
-        public void RefreshSubForums(ForumDbContext context)
+    
+
+        public bool UpdateThread(string threadID, int postCount)
         {
-            subForums.Clear();
-            foreach (var sub in context.SubForums)
-            {
-                subForums.Add(sub);
-            }
+            foreach(var thread in threads) 
+                if(thread.ID == threadID)
+                {
+                    thread.Comments += postCount;
+                    if (postCount > 0)
+                    {
+                        thread.LastPostTime = DateTime.Now;
+                        threads.Remove(thread);
+                        threads.Insert(0, thread);
+                        
+                    }
+                    return true;
+                }
+            return false;
         }
     }
 }

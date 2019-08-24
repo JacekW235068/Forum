@@ -30,23 +30,26 @@ namespace Forum.Controllers
             _forumDbContext = context;
             _tokenGenerator = access;
             _signInManager = signInManager;
-      
         }
 
-    
+
         [HttpPost]
         [Route("Register")]
         public async Task<IActionResult> RegisterAsync([FromForm]AppUserRegisterPost user)
         {
-            //if (!ModelState.IsValid) return BadRequest(ModelState);
             var appuser = new AppUser()
             {
                 Email = user.Email,
                 UserName = user.Username,
             };
             var createResult = await _userManager.CreateAsync(appuser, user.Password);
-            if (!createResult.Succeeded) {
-                return BadRequest(createResult.Errors);
+            if (!createResult.Succeeded)
+            {
+                return BadRequest(Json(new
+                {
+                    Errors = createResult.Errors,
+                    title = "problem with registration"
+                }));
             }
             await _userManager.AddToRoleAsync(appuser, "NormalUser");
             var roles = await _userManager.GetRolesAsync(appuser);
@@ -55,22 +58,23 @@ namespace Forum.Controllers
             var response = _tokenGenerator.StandardRefreshToken();
             appuser.RefreshTokens.Add(response);
             await _forumDbContext.SaveChangesAsync();
-           // await _signInManager.SignInAsync(appuser, false);
-            return Json(new {
+            await _signInManager.SignInAsync(appuser, false);
+            return Json(new
+            {
                 AccessToken = _tokenGenerator.StandardAccessToken(appuser, roles),
                 RefreshToken = response.Token
             });
         }
 
         [HttpPost]
+        [Route("Login")]
         public async Task<IActionResult> LoginAsync([FromForm]AppUserLoginPost user)
         {
-            //if (!ModelState.IsValid) return BadRequest(ModelState);
             var appUser = _forumDbContext.Users.Include(x => x.RefreshTokens)
                 .FirstOrDefault(x => x.Email == user.Email);
             if (appUser == null) return BadRequest(Json(new { Error = "User not found", Lockedout = false }));
-            var signInResult = await _signInManager.PasswordSignInAsync(appUser, user.Password, false, false);
-            if (!signInResult.Succeeded) return BadRequest(Json(new { Error = "Bad login or password", Lockedout = signInResult.IsLockedOut }));
+            var signInResult = await _signInManager.PasswordSignInAsync(appUser, user.Password, false, true);
+            if (!signInResult.Succeeded) return BadRequest(Json(new { Error = "Login failed", Lockedout = signInResult.IsLockedOut }));
             var response = _tokenGenerator.StandardRefreshToken();
             appUser.RefreshTokens.Add(response);
             var roles = await _userManager.GetRolesAsync(appUser);
@@ -86,19 +90,19 @@ namespace Forum.Controllers
         [Route("RefreshToken")]
         public async Task<IActionResult> RefreshTokenAsync([FromForm]string access, [FromForm]string refresh)
         {
-            //TODO: Move it into constructor for all controllers
-            JwtSecurityToken accessToken;
-            var handler = new JwtSecurityTokenHandler();
             string id;
             try
             {
+                var handler = new JwtSecurityTokenHandler();
+                JwtSecurityToken accessToken;
                 accessToken = handler.ReadJwtToken(access);
-               id = accessToken.Claims.FirstOrDefault(x => x.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier").Value;
+                id = accessToken.Claims.FirstOrDefault(x => x.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier").Value;
             }
             catch
             {
                 return BadRequest("Bad Token");
             }
+
             var user = _forumDbContext.Users.FirstOrDefault(x => x.Id == id);
             if (user == null)
                 return BadRequest("Not Longer a member");
@@ -116,10 +120,9 @@ namespace Forum.Controllers
             await _forumDbContext.SaveChangesAsync();
             return Json(new
             {
-                AccessToken = _tokenGenerator.StandardAccessToken(user,  roles),
+                AccessToken = _tokenGenerator.StandardAccessToken(user, roles),
                 RefreshToken = response.Token
             });
-
         }
     }
 }

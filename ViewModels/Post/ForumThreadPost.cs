@@ -10,7 +10,7 @@ namespace Forum.ViewModels
     public class ForumThreadPost
     {
         [Required]
-        [StringLength(50, MinimumLength = 10, ErrorMessage = "Title has to be between 5 and 100 characters long")]
+        [StringLength(50, MinimumLength = 10, ErrorMessage = "Title has to be between 5 and 50 characters long")]
         public string Title { get; set; }
         [Required]
         [StringLength(500, MinimumLength = 30, ErrorMessage = "Message has to be between 30 and 500 characters long")]

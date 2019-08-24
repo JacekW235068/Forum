@@ -23,6 +23,7 @@ namespace Forum.Models
         public DateTime PostTime { get; set; }
         [Required]
         public DateTime LastPostTime { get; set; }
+        public int NumberOfComments { get; set; }
 
         //Relations
         public AppUser User { get; set; }
