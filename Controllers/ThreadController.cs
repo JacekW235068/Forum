@@ -46,7 +46,7 @@ namespace Forum.Controllers
 
         [HttpGet]
         [Route("Recent")]
-        public IActionResult GetRecentThreads([FromForm]uint start, [FromForm]uint amount)
+        public IActionResult GetRecentThreads([FromQuery]uint start, [FromQuery] uint amount)
         {
             if (amount == 0) return BadRequest("Invalid argument");
             List<ForumThreadGet> threads = new List<ForumThreadGet>();

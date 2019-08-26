@@ -20,10 +20,6 @@ namespace Forum.ViewModels
         [EmailAddress]
         public string Email { get; set; }
 
-        public static explicit operator AppUser(AppUserRegisterPost user)
-        {
-            return new AppUser(user);
-        }
     }
 }
 public class UserNameAttribute : ValidationAttribute
