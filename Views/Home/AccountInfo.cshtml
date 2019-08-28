@@ -1,0 +1,26 @@
+﻿@model Forum.ViewModels.AppUserLoginPost;
+@{Layout = null;}
+@if (ViewBag.Name == null)
+{
+    <div class="modal-body">
+        <form id="loginform">
+            @Html.TextBoxFor(model => model.Email, new { @class = "form-control", @placeholder = "Email" })
+            @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger" })
+            <br/>
+            @Html.TextBoxFor(model => model.Password, new { @class = "form-control", @placeholder = "Password" })
+            @Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger" })
+            <br/>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <input type="button" value="Login" class="btn btn-block btn-primary " id="btnlogin" />
+    </div>
+}
+else
+{
+    <h4 class="display-4">@ViewBag["Name"]</h4>
+    foreach (var role in ViewBag["Roles"])
+    {
+        <h6 class="display-4">@role</h6>
+    }
+}
