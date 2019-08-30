@@ -1,11 +1,14 @@
-﻿<!DOCTYPE html>
+﻿@model Forum.ViewModels.AppUserRegisterPost
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
 <html>
 <head>
-    <meta lang="en" />
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Forum</title>
-
+    <meta name="viewport" content="width=device-width" />
+    <title>RegisterForm</title>
     <environment include="Development">
         <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
     </environment>
@@ -16,22 +19,26 @@
               crossorigin="anonymous"
               integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" />
     </environment>
-    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/css/Register.css" />
 </head>
 <body>
-    <button id="accountbutton" class="btn btn-secondary">Account</button>
-    <div class="modal fade" id="accountmodal">
-        <div class="modal-dialog">
-            <div class="modal-content" id="accountcontent">
-                <div style="width: 300px; height: 100px">bla bla bla </div>
-            </div>
+    <div id="creatediv" class="jumbotron col-sm-12 col-md-6 col-lg-4 col-xl-3">
+        <div class="modal-body">
+            <form id="registerform">
+                @Html.TextBoxFor(model => model.Email, new { @class = "form-control", @placeholder = "Email" })
+                @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger" })
+                <br />
+                @Html.TextBoxFor(model => model.Password, new { @class = "form-control", @placeholder = "Password" })
+                @Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger" })
+                <br />
+                @Html.TextBoxFor(model => model.Username, new { @class = "form-control", @placeholder = "UserName" })
+                @Html.ValidationMessageFor(model => model.Username, "", new { @class = "text-danger" })<br />
+            </form>
+            <div id="servererrors" class="text-danger"></div>
         </div>
-    </div>
-    <div class="container">
-        <partial name="_CookieConsentPartial" />
-
-        @RenderBody()
-
+        <div class="modal-footer">
+            <input type="button" value="Register" class="btn btn-primary " id="btnregister" />
+        </div>
     </div>
 
     <environment include="Development">
@@ -53,9 +60,8 @@
         </script>
     </environment>
     <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/Register_Main.js"></script>
+    <script src="~/js/site.js"></script>
 
-    <script src="~/js/site.js" asp-append-version="true"></script>
-
-    @RenderSection("Scripts", required: false)
 </body>
 </html>

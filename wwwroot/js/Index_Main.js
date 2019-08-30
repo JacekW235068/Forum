@@ -25,6 +25,7 @@ $("#LoadMore").click(function () {
             response.threads.forEach(function (thread) {
                 var $div = createNewThread(thread);
                 $grid.append($div).masonry('appended', $div);
+
             })
         },
         error: function (xhr, ajaxOptions, thrownError) {

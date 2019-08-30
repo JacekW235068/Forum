@@ -29,6 +29,11 @@ namespace Forum.Controllers
         {
             return View();
         }
+        
+        public IActionResult RegisterForm()
+        {
+            return View();
+        }
 
         public IActionResult AccountInfo(string accessToken)
         {
@@ -42,6 +47,7 @@ namespace Forum.Controllers
                     var trimmedToken = Request.Headers["Authorization"].ToString();
                     trimmedToken = trimmedToken.Substring(7);
                     AccessToken = handler.ReadJwtToken(trimmedToken);
+                    if (AccessToken.ValidTo < DateTime.Now) return BadRequest("Token Expired");
                     userID = AccessToken.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier).Value;
                 }
                 catch { return BadRequest("Bad Token"); }

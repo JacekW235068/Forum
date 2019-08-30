@@ -47,8 +47,7 @@ namespace Forum.Controllers
             {
                 return BadRequest(Json(new
                 {
-                    Errors = createResult.Errors,
-                    title = "problem with registration"
+                    Errors = createResult.Errors
                 }));
             }
             await _userManager.AddToRoleAsync(appuser, "NormalUser");
@@ -70,6 +69,7 @@ namespace Forum.Controllers
         [Route("Login")]
         public async Task<IActionResult> LoginAsync([FromForm]AppUserLoginPost user)
         {
+            Response.ContentType = "Application/json";
             var appUser = _forumDbContext.Users.Include(x => x.RefreshTokens)
                 .FirstOrDefault(x => x.Email == user.Email);
             if (appUser == null) return BadRequest(Json(new { Error = "User not found", Lockedout = false }));
