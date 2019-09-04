@@ -47,7 +47,7 @@ namespace Forum.Controllers
             {
                 return BadRequest(Json(new
                 {
-                    Errors = createResult.Errors
+                    createResult.Errors
                 }));
             }
             await _userManager.AddToRoleAsync(appuser, "NormalUser");

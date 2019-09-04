@@ -29,7 +29,7 @@ namespace Forum.Controllers {
 
         [HttpGet]
         [Route("Posts")]
-        public IActionResult GetPosts([FromForm]string threadID, [FromForm]uint start, [FromForm]uint amount)
+        public IActionResult GetPosts(string threadID, uint start,uint amount)
         {
             Guid guid;
             if (!Guid.TryParse(threadID, out guid))
@@ -76,7 +76,7 @@ namespace Forum.Controllers {
             _forumDbContext.Posts.Add(newPost);
             _forumDbContext.SaveChanges();
             _databaseCache.UpdateThread(newPost.ParentID.ToString(), 1);
-            return Ok(newPost.PostID);
+            return Ok(Json(newPost.PostID));
         }
 
         [Authorize]

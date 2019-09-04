@@ -1,6 +1,6 @@
 ﻿@model Forum.ViewModels.AppUserLoginPost;
 @{Layout = null;}
-@if (ViewBag.Name == null)
+@if (ViewBag.User == null)
 {
     <div class="modal-body">
         <form id="loginform">
@@ -20,9 +20,11 @@
 }
 else
 {
-    <h4 class="display-4">@ViewBag["Name"]</h4>
-    foreach (var role in ViewBag["Roles"])
-    {
-        <h6 class="display-4">@role</h6>
-    }
+    <p class="display-4">@ViewBag.User</p>
+    <div id="roles">
+        @foreach (var role in ViewBag.Roles)
+        {
+        <p class="display-4">@role</p>
+        }
+    </div>
 }

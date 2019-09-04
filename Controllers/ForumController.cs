@@ -41,14 +41,14 @@ namespace Forum.Controllers
         [Route("New")]
         public IActionResult NewForum([FromForm]SubForumPost Forum)
         {
-            if (_forumDBContext.SubForums.FirstOrDefault(x => x.Name == Forum.Name) != null) return BadRequest("Name is not unique");
+            if (_forumDBContext.SubForums.FirstOrDefault(x => x.Name == Forum.Name) != null) return BadRequest(Json(new { Error = "Name is not unique" }));
             var newForum = (SubForum)Forum;
             _forumDBContext.SubForums.Add(newForum);
             _forumDBContext.SaveChanges();
             _databaseCache.RefreshSubForums(_forumDBContext);
-            newForum.Threads = new List<ForumThread>();
-            SubForumGet Result = newForum;
-            return Ok(Json(Result));
+            return Ok(
+                Json(newForum.SubForumID
+                ));
         }
 
         //[Authorize(Roles = "Admin")]
@@ -56,10 +56,10 @@ namespace Forum.Controllers
         [Route("Delete")]
         public IActionResult DeleteForum([FromForm]string ID)
         {
-            Guid guid;
-            if (!Guid.TryParse(ID, out guid))
+            
+            if (!Guid.TryParse(ID, out Guid guid))
                 return BadRequest("Wrong Format");
-            _forumDBContext.SubForums.Remove(new SubForum() { SubForumID = Guid.Parse(ID)});
+            _forumDBContext.SubForums.Remove(new SubForum() { SubForumID = guid });
             try
             {
                 _forumDBContext.SaveChanges();

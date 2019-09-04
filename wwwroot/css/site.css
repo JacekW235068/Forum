@@ -48,7 +48,21 @@
     clear: both;
 }
 #accountbutton {
-    position: absolute;
+    left: 10px;
+}
+.post-item {
+    width: 100%;
+    background: red;
+}
+#threadview{
+    overflow-y: scroll;
+    height: 80%;
+}
+.navbar-nav {
+    border-right: 1px solid #c0c0c0;
+}
+#addbutton{
+    position: fixed;
     left: 50px;
-    top: 50px;
+    top: 100px;
 }

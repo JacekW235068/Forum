@@ -5,7 +5,8 @@
 var $grid = $('.grid').masonry({
 
     itemSelector: '.grid-item'
-  });
+});
+
 var start = 0;
 var amount = 3;
 
@@ -23,7 +24,10 @@ $("#LoadMore").click(function () {
             else
                 $("#LoadMore").attr("disabled", true);
             response.threads.forEach(function (thread) {
-                var $div = createNewThread(thread);
+                var $div = createNewThreadView(thread);
+                $div.click(function (event) {
+                    ViewThread($(this).attr('id'))
+                })
                 $grid.append($div).masonry('appended', $div);
 
             })
@@ -35,15 +39,3 @@ $("#LoadMore").click(function () {
     });
 });
 
-function createNewThread(thread) {
-    var newDiv = document.createElement("div");
-    newDiv.classList.add("grid-item");
-    var divTitle = document.createElement("h3");
-    divTitle.innerHTML = thread.title;
-    var divContent = document.createElement("p");
-    divContent.innerHTML = thread.text;
-    newDiv.appendChild(divTitle);
-    newDiv.appendChild(divContent);
-    var $NewDiv = $(newDiv);
-    return $NewDiv;
-}

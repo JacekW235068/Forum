@@ -10,15 +10,18 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
+using Forum.Services;
 
 namespace Forum.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ForumDbContext _forumDbContext;    
-        public HomeController(ForumDbContext forumDbContext)
+        private readonly ForumDbContext _forumDbContext;
+        private readonly IDatabaseCache _databaseCache;
+        public HomeController(ForumDbContext forumDBContext, IDatabaseCache databaseCache)
         {
-            _forumDbContext = forumDbContext;
+            _forumDbContext = forumDBContext;
+            _databaseCache = databaseCache;
         }
         public IActionResult Index()
         {
@@ -35,7 +38,8 @@ namespace Forum.Controllers
             return View();
         }
 
-        public IActionResult AccountInfo(string accessToken)
+
+        public IActionResult AccountInfo([FromQuery]string accessToken)
         {
             if (accessToken != null)
             {
@@ -44,26 +48,32 @@ namespace Forum.Controllers
                 {
                     JwtSecurityToken AccessToken;
                     var handler = new JwtSecurityTokenHandler();
-                    var trimmedToken = Request.Headers["Authorization"].ToString();
-                    trimmedToken = trimmedToken.Substring(7);
-                    AccessToken = handler.ReadJwtToken(trimmedToken);
+                    AccessToken = handler.ReadJwtToken(accessToken);
                     if (AccessToken.ValidTo < DateTime.Now) return BadRequest("Token Expired");
                     userID = AccessToken.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier).Value;
                 }
                 catch { return BadRequest("Bad Token"); }
+                if (!_forumDbContext.Users.Any(x => x.Id == userID)) return View();
                 var user = _forumDbContext.Users.FirstOrDefault(x => x.Id == userID).UserName;
-                if (user == null) BadRequest();
+                
                 var userroles = _forumDbContext.UserRoles.Where(y => y.UserId == userID).ToArray();
                 var roles = _forumDbContext.Roles.Where(x => userroles.Any(y => y.RoleId == x.Id)).Select(x => x.Name).ToArray();
                 //add parameters for viewbag
-                ViewBag["Name"] = user;
-                ViewBag["Roles"] = roles;
+                ViewBag.User = user;
+                ViewBag.Roles = roles;
 
 
             }
             return View();
         }
 
+        [Route("Subs")]
+        public IActionResult SubForumNavigation()
+        {
+            return View(_databaseCache.SubForums);
+        }
+
+        //just for tests
         [Authorize]
         [HttpPost]
         public IActionResult privateaction()

@@ -103,7 +103,7 @@ namespace Forum.Controllers
             _forumDbContext.SaveChanges();
             newThread.Comments = new List<Post>();
             _databaseCache.AddThread(newThread);
-            return Ok(newThread.ThreadID);
+            return Ok(Json(newThread.ThreadID));
         }
 
         [Authorize]
