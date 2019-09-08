@@ -66,3 +66,8 @@
     left: 50px;
     top: 100px;
 }
+.btn-delete{
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+}

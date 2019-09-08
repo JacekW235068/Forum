@@ -28,7 +28,7 @@ namespace Forum.Controllers
 
         [HttpGet]
         [Route("Threads")]
-        public IActionResult GetThreads([FromForm]string subForumID, [FromForm]uint start, [FromForm]uint amount)
+        public IActionResult GetThreads(string subForumID, uint start, uint amount)
         {
             Guid guid;
             if (!Guid.TryParse(subForumID, out guid))

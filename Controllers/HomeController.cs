@@ -38,7 +38,13 @@ namespace Forum.Controllers
             return View();
         }
 
-
+        public IActionResult Threads(string subID)
+        {
+            if (subID == null)
+                return BadRequest();
+            ViewBag.SubID = subID;
+            return View();
+        }
         public IActionResult AccountInfo([FromQuery]string accessToken)
         {
             if (accessToken != null)
@@ -73,6 +79,14 @@ namespace Forum.Controllers
             return View(_databaseCache.SubForums);
         }
 
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult Error()
+        {
+            HttpContext.Response.StatusCode = 500;
+
+            return Json(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier, StatusCode = 500 });
+        }
+
         //just for tests
         [Authorize]
         [HttpPost]
@@ -95,12 +109,6 @@ namespace Forum.Controllers
             return Ok();
         }
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            HttpContext.Response.StatusCode = 500;
-
-            return Json(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier, StatusCode = 500 });
-        }
+    
     }
 }

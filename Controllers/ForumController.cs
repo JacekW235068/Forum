@@ -36,7 +36,7 @@ namespace Forum.Controllers
             });
         }
 
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [Route("New")]
         public IActionResult NewForum([FromForm]SubForumPost Forum)
@@ -51,10 +51,10 @@ namespace Forum.Controllers
                 ));
         }
 
-        //[Authorize(Roles = "Admin")]
-        [HttpDelete]
-        [Route("Delete")]
-        public IActionResult DeleteForum([FromForm]string ID)
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("{id}")]
+        [Route("Delete/{id}")]
+        public IActionResult DeleteForum(string ID)
         {
             
             if (!Guid.TryParse(ID, out Guid guid))

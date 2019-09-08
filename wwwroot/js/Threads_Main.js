@@ -1,21 +1,24 @@
 ﻿$(document).ready(function () {
-   // alert("xD");
-
+    debugger
+    subForumID = $('#Main').children().attr('id');
 })
+
 var $grid = $('.grid').masonry({
 
     itemSelector: '.grid-item'
 });
-
+var subForumID = "";
 var start = 0;
 var amount = 3;
 
 $("#LoadMore").click(function () {
-    var Data = { start, amount }
+
+    var Data = { start, amount };
+
     $.ajax({
-        url: "/api/Thread/Recent",
+        url: "/api/Thread/Threads",
         type: 'get',
-        data: {start, amount},
+        data: { subForumID, start, amount },
         success: function (response) {
             if (response.threads.length == amount)
                 start += amount;
@@ -36,4 +39,3 @@ $("#LoadMore").click(function () {
         }
     });
 });
-

@@ -13,11 +13,10 @@
         @if (Model != null)
         {
             foreach (var sub in Model)
-            {<a href="#">
+            {
                     <div class="grid-item" id="@sub.ID">
-                        <p>@sub.Name</p>@sub.ThreadCount
+                        <p style="pointer-events: none">@sub.Name</p>@sub.ThreadCount
                     </div>
-                </a>
             }
         }
     </div>
