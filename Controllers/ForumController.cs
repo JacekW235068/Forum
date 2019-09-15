@@ -31,9 +31,9 @@ namespace Forum.Controllers
         [Route("AllForums")]
         public JsonResult GetAllForums()
         {
-            return Json(new {
-                _databaseCache.SubForums
-            });
+            return JsonFormatter.SuccessResponse( 
+               _databaseCache.SubForums
+            );
         }
 
         [Authorize(Roles = "Admin")]
@@ -41,13 +41,15 @@ namespace Forum.Controllers
         [Route("New")]
         public IActionResult NewForum([FromForm]SubForumPost Forum)
         {
-            if (_forumDBContext.SubForums.FirstOrDefault(x => x.Name == Forum.Name) != null) return BadRequest(Json(new { Error = "Name is not unique" }));
+            if (_forumDBContext.SubForums.FirstOrDefault(x => x.Name == Forum.Name) != null)
+                return BadRequest(JsonFormatter.ErrorResponse("Name is not unique" ));
             var newForum = (SubForum)Forum;
             _forumDBContext.SubForums.Add(newForum);
             _forumDBContext.SaveChanges();
             _databaseCache.RefreshSubForums(_forumDBContext);
+            newForum.Threads = new List<ForumThread>();
             return Ok(
-                Json(newForum.SubForumID
+                JsonFormatter.SuccessResponse((SubForumGet)newForum
                 ));
         }
 
@@ -58,7 +60,7 @@ namespace Forum.Controllers
         {
             
             if (!Guid.TryParse(ID, out Guid guid))
-                return BadRequest("Wrong Format");
+                return BadRequest(JsonFormatter.FailResponse("Wrong Format"));
             _forumDBContext.SubForums.Remove(new SubForum() { SubForumID = guid });
             try
             {
@@ -66,10 +68,10 @@ namespace Forum.Controllers
             }
             catch
             {
-                return BadRequest("ID does not exist in Database");
+                return BadRequest(JsonFormatter.ErrorResponse("ID does not exist in Database"));
             }
             _databaseCache.RefreshSubForums(_forumDBContext);
-            return Ok();
+            return Ok(JsonFormatter.SuccessResponse(null));
         }
 
 

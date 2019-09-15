@@ -45,10 +45,7 @@ namespace Forum.Controllers
             var createResult = await _userManager.CreateAsync(appuser, user.Password);
             if (!createResult.Succeeded)
             {
-                return BadRequest(Json(new
-                {
-                    createResult.Errors
-                }));
+                return BadRequest(JsonFormatter.ErrorResponse("Problem Creating A User", createResult.Errors));
             }
             await _userManager.AddToRoleAsync(appuser, "NormalUser");
             var roles = await _userManager.GetRolesAsync(appuser);
@@ -58,7 +55,7 @@ namespace Forum.Controllers
             appuser.RefreshTokens.Add(response);
             await _forumDbContext.SaveChangesAsync();
             await _signInManager.SignInAsync(appuser, false);
-            return Json(new
+            return JsonFormatter.SuccessResponse(new
             {
                 AccessToken = _tokenGenerator.StandardAccessToken(appuser, roles),
                 RefreshToken = response.Token
@@ -72,14 +69,14 @@ namespace Forum.Controllers
             Response.ContentType = "Application/json";
             var appUser = _forumDbContext.Users.Include(x => x.RefreshTokens)
                 .FirstOrDefault(x => x.Email == user.Email);
-            if (appUser == null) return BadRequest(Json(new { Error = "User not found", Lockedout = false }));
+            if (appUser == null) return BadRequest(JsonFormatter.ErrorResponse("User Not Found"));
             var signInResult = await _signInManager.PasswordSignInAsync(appUser, user.Password, false, true);
-            if (!signInResult.Succeeded) return BadRequest(Json(new { Error = "Login failed", Lockedout = signInResult.IsLockedOut }));
+            if (!signInResult.Succeeded) return BadRequest(JsonFormatter.ErrorResponse("Login failed", new { code = "Lockedout", Description = signInResult.IsLockedOut }));
             var response = _tokenGenerator.StandardRefreshToken();
             appUser.RefreshTokens.Add(response);
             var roles = await _userManager.GetRolesAsync(appUser);
             await _forumDbContext.SaveChangesAsync();
-            return Json(new
+            return JsonFormatter.SuccessResponse(new
             {
                 AccessToken = _tokenGenerator.StandardAccessToken(appUser, roles),
                 RefreshToken = response.Token
@@ -100,25 +97,25 @@ namespace Forum.Controllers
             }
             catch
             {
-                return BadRequest("Bad Token");
+                return BadRequest(JsonFormatter.ErrorResponse("Bad Token"));
             }
 
             var user = _forumDbContext.Users.FirstOrDefault(x => x.Id == id);
             if (user == null)
-                return BadRequest("Not Longer a member");
+                return BadRequest(JsonFormatter.ErrorResponse("User does not exist"));
             _forumDbContext.RefreshTokens.RemoveRange(_forumDbContext.RefreshTokens.Where(x => x.ExpirationDate < DateTime.Now));
             var refreshToken = _forumDbContext.RefreshTokens.FirstOrDefault(x => x.Token == refresh);
             if (refreshToken == null)
             {
                 await _forumDbContext.SaveChangesAsync();
-                return BadRequest("Refresh Token Expired");
+                return BadRequest(JsonFormatter.ErrorResponse("Token Expired"));
             }
             _forumDbContext.RefreshTokens.Remove(refreshToken);
             var response = _tokenGenerator.StandardRefreshToken();
             user.RefreshTokens.Add(response);
             var roles = await _userManager.GetRolesAsync(user);
             await _forumDbContext.SaveChangesAsync();
-            return Json(new
+            return JsonFormatter.SuccessResponse(new
             {
                 AccessToken = _tokenGenerator.StandardAccessToken(user, roles),
                 RefreshToken = response.Token

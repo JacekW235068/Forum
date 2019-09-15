@@ -83,8 +83,8 @@ namespace Forum.Controllers
         public IActionResult Error()
         {
             HttpContext.Response.StatusCode = 500;
-
-            return Json(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier, StatusCode = 500 });
+            //scetchy af
+            return JsonFormatter.ErrorResponse("Fatal Error",new List<object>());
         }
 
         //just for tests
