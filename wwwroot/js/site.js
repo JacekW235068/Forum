@@ -1,6 +1,8 @@
-﻿$(document).ready(AccountData());
+﻿$(document).ready(function () {
+    AccountData();
+});
 
-$('#accountbutton').click(function () {
+$('#accountbutton').click(function() {
     modal = document.getElementById("accountcontent");
     if (modal.innerHTML.includes("<div")) {
         $('#accountmodal').modal('toggle');
@@ -17,26 +19,27 @@ function AccountData() {
         url: "/Home/AccountInfo",
         type: 'get',
         data: { accessToken: getCookie("accessToken")},
-        success: function (response) {
+        success: function (response, textStatus, xhr) {
             var modalContent = document.getElementById("accountcontent");
-            modalContent.innerHTML = response;
+            if (modalContent != null)
+                modalContent.innerHTML = response;
             if (modal.innerHTML.includes("form")) {
                 eraseCookie("accessToken");
                 eraseCookie("refreshToken");
-                InitForm();
+                InitAccountForm();
             }
             if (typeof init === 'function') {
                 init();
             }
-        
+
         },
         error: function (xhr, ajaxOptions, thrownError) {
-            alert(thrownError);
+            modal.innerHTML = "Unexpected error occured";
         }
     });
 }
 
-function InitForm() {
+function InitAccountForm() {
     $("#loginform").removeData("validator");
     $("#loginform").removeData("unobtrusiveValidation");
     $.validator.unobtrusive.parse("#loginform");
@@ -50,12 +53,12 @@ function LoginButtonListener() {
         type: "POST",
         url: "/api/Account/Login",
         data: LoginData,
-        success: function (response) {
-            setCookie("accessToken", response.accessToken, 1);
-            setCookie("refreshToken", response.refreshToken, 30);
+        success: function (response, textStatus, xhr) {
+            setCookie("accessToken", response.data.accessToken, 1);
+            setCookie("refreshToken", response.data.refreshToken, 30);
             AccountData();
         },
-        error: function (thrownError) {
+        error: function (xhr, ajaxOptions, thrownError) {
             if (thrownError.responseJSON.value) {
                 document.getElementById("servererrors").innerHTML = thrownError.responseJSON.value.error;
                 if (thrownError.responseJSON.value.lockedout) {

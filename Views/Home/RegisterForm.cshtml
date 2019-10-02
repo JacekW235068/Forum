@@ -26,13 +26,13 @@
         <div class="modal-body">
             <form id="registerform">
                 @Html.TextBoxFor(model => model.Email, new { @class = "form-control", @placeholder = "Email" })
-                @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger" })
+                @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger", @id="registeremail" })
                 <br />
                 @Html.TextBoxFor(model => model.Password, new { @class = "form-control", @placeholder = "Password" })
-                @Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger" })
+                @Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger", @id="registerpassword" })
                 <br />
                 @Html.TextBoxFor(model => model.Username, new { @class = "form-control", @placeholder = "UserName" })
-                @Html.ValidationMessageFor(model => model.Username, "", new { @class = "text-danger" })<br />
+                @Html.ValidationMessageFor(model => model.Username, "", new { @class = "text-danger", @id="registerusername" })<br />
             </form>
             <div id="servererrors" class="text-danger"></div>
         </div>

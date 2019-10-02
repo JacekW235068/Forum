@@ -42,7 +42,7 @@ namespace Forum.Controllers
         public IActionResult NewForum([FromForm]SubForumPost Forum)
         {
             if (_forumDBContext.SubForums.FirstOrDefault(x => x.Name == Forum.Name) != null)
-                return BadRequest(JsonFormatter.ErrorResponse("Name is not unique" ));
+                return StatusCode(400,JsonFormatter.ErrorResponse("Name is not unique" ));
             var newForum = (SubForum)Forum;
             _forumDBContext.SubForums.Add(newForum);
             _forumDBContext.SaveChanges();
@@ -60,7 +60,7 @@ namespace Forum.Controllers
         {
             
             if (!Guid.TryParse(ID, out Guid guid))
-                return BadRequest(JsonFormatter.FailResponse("Wrong Format"));
+                return StatusCode(400,JsonFormatter.FailResponse("Wrong Format"));
             _forumDBContext.SubForums.Remove(new SubForum() { SubForumID = guid });
             try
             {
@@ -68,7 +68,7 @@ namespace Forum.Controllers
             }
             catch
             {
-                return BadRequest(JsonFormatter.ErrorResponse("ID does not exist in Database"));
+                return StatusCode(400,JsonFormatter.ErrorResponse("ID does not exist in Database"));
             }
             _databaseCache.RefreshSubForums(_forumDBContext);
             return Ok(JsonFormatter.SuccessResponse(null));

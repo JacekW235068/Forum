@@ -31,8 +31,8 @@ namespace Forum.Controllers
         public IActionResult GetThreads(string subForumID, uint start, uint amount)
         {
             if (!Guid.TryParse(subForumID, out Guid guid))
-                return BadRequest(JsonFormatter.FailResponse("Wrong Format"));
-            if (amount == 0) return BadRequest(JsonFormatter.FailResponse("Invalid argument"));
+                return StatusCode(400,JsonFormatter.FailResponse("Wrong Format"));
+            if (amount == 0) return StatusCode(400,JsonFormatter.FailResponse("Invalid argument"));
             List<ForumThreadGet> threads = new List<ForumThreadGet>();
             foreach (var x in _forumDbContext.Threads.Where(x => x.ParentID == guid)
                 .Include(x=>x.User).Skip((int)start).Take((int)amount))
@@ -46,7 +46,7 @@ namespace Forum.Controllers
         [Route("Recent")]
         public IActionResult GetRecentThreads([FromQuery]uint start, [FromQuery] uint amount)
         {
-            if (amount == 0) return BadRequest(JsonFormatter.FailResponse("Invalid argument"));
+            if (amount == 0) return StatusCode(400,JsonFormatter.FailResponse("Invalid argument"));
             List<ForumThreadGet> threads = new List<ForumThreadGet>();
             threads.AddRange(_databaseCache.GetThreads(_forumDbContext, start, amount));
             if (threads.Count == 0)
@@ -59,7 +59,7 @@ namespace Forum.Controllers
         [Route("UserThreads")]
         public IActionResult GetUserThreads([FromForm]string userName, [FromForm]uint start, [FromForm]uint amount)
         {
-            if (amount == 0) return BadRequest("Invalid argument");
+            if (amount == 0) return StatusCode(400,"Invalid argument");
             var user = _forumDbContext.Users.Where(x => x.UserName == userName).FirstOrDefault();
             if (user == null) return NotFound("User No longer Exists");
             var threads = new List<ForumThreadGet>();
@@ -86,9 +86,9 @@ namespace Forum.Controllers
                 accessToken = handler.ReadJwtToken(trimmedToken);
                 id = accessToken.Claims.FirstOrDefault(x => x.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier").Value;
             }
-            catch { return BadRequest(JsonFormatter.FailResponse("Bad Token")); }
+            catch { return StatusCode(400,JsonFormatter.FailResponse("Bad Token")); }
             if (!Guid.TryParse(thread.SubForumID, out _))
-                return BadRequest(JsonFormatter.FailResponse("Wrong Format"));
+                return StatusCode(400,JsonFormatter.FailResponse("Wrong Format"));
             var newThread = (ForumThread)thread;
             newThread.User = _forumDbContext.Users.FirstOrDefault(x => x.Id == id);
             newThread.ParentForum = _forumDbContext.SubForums.FirstOrDefault(x => x.SubForumID == newThread.ParentID);
@@ -120,9 +120,9 @@ namespace Forum.Controllers
                 roles = accessToken.Claims.Where(x => x.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role").Select(x=>x.Value);
                 id = accessToken.Claims.FirstOrDefault(x => x.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier").Value;
             }
-            catch { return BadRequest(JsonFormatter.FailResponse("Bad Token")); }
+            catch { return StatusCode(400,JsonFormatter.FailResponse("Bad Token")); }
             if (!Guid.TryParse(threadID, out Guid guid))
-                return BadRequest(JsonFormatter.FailResponse("Wrong Format"));
+                return StatusCode(400,JsonFormatter.FailResponse("Wrong Format"));
             var thread = await _forumDbContext.Threads.Include(x=> x.User).FirstOrDefaultAsync(x => x.ThreadID == guid);
             if (thread == null) NotFound("Thread does no longer exist");
             if (roles.Contains("Admin"))
