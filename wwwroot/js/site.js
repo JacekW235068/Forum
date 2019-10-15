@@ -3,38 +3,33 @@
 });
 
 $('#accountbutton').click(function() {
-    modal = document.getElementById("accountcontent");
-    if (modal.innerHTML.includes("<div")) {
-        $('#accountmodal').modal('toggle');
-        return;
-       
-    }
-    $('#accountmodal').modal('show');
-    AccountData();
+    $('#accountmodal').modal('toggle');
 });
 
 function AccountData() {
-    modal = document.getElementById("accountcontent");
     $.ajax({
         url: "/Home/AccountInfo",
         type: 'get',
         data: { accessToken: getCookie("accessToken")},
         success: function (response, textStatus, xhr) {
-            var modalContent = document.getElementById("accountcontent");
-            if (modalContent != null)
-                modalContent.innerHTML = response;
-            if (modal.innerHTML.includes("form")) {
+            $('#accountcontent').html(response);
+            if ($('#accountcontent').html().includes("form")) {
                 eraseCookie("accessToken");
                 eraseCookie("refreshToken");
                 InitAccountForm();
+            } else {
+                roles = "";
+                $var = $('#roles > p');
+                $var.each(function (obj) {
+                    roles += $(this).text();
+                    roles += ',';
+                    setCookie("roles", roles, 1);
+                })
+                setCookie("username", $('#username').text(), 1);
             }
-            if (typeof init === 'function') {
-                init();
-            }
-
         },
-        error: function (xhr, ajaxOptions, thrownError) {
-            modal.innerHTML = "Unexpected error occured";
+        error: function (response, ajaxOptions, thrownErrorr) {
+            $('#accountcontent').html(thrownErrorr);
         }
     });
 }
@@ -58,20 +53,39 @@ function LoginButtonListener() {
             setCookie("refreshToken", response.data.refreshToken, 30);
             AccountData();
         },
-        error: function (xhr, ajaxOptions, thrownError) {
-            if (thrownError.responseJSON.value) {
-                document.getElementById("servererrors").innerHTML = thrownError.responseJSON.value.error;
-                if (thrownError.responseJSON.value.lockedout) {
-                    //disable form
+        error: function (response, ajaxOptions, thrownErrorr) {
+            response = response.responseJSON.value;
+            servererrors = "";
+            registerpassword = "";
+            registeremail = "";
+            if (response.message == "Validation Problem") {
+                $('#servererrors').text("");
+                response.data.forEach(function (obj) {
+                    if (obj.code == "Password") {
+                        registerpassword += obj.description;
+                        registerpassword += "\n";
+                    } else if (obj.code == "Email") {
+                        registeremail += obj.description;
+                        registeremail += "\n";
+                    } else {
+                        servererrors += obj.description;
+                        servererrors += "\n";
+                    }
+                });
+            } else if (response.message == "User Not Found") {
+                servererrors += response.message;
+                servererrors += "\n";
+            } else if (response.message == "Login failed") {
+                servererrors += response.message;
+                servererrors += "\n";
+                if (response.responseJSON.description) {
+                    servererrors = "your account has beed locked out due to too many failed login attempt";
+                    $('#btnlogin').attr("disabled", true);
                 }
             }
-            if (thrownError.responseJSON.errors) {
-                if (thrownError.responseJSON.errors.Password)
-                    document.getElementById("servererrors").innerHTML = thrownError.responseJSON.errors.Password + "\n";
-                if (thrownError.responseJSON.errors.Email)
-                    document.getElementById("servererrors").innerHTML = thrownError.responseJSON.errors.Email + "\n";
-            }
-
+            $('#servererrors').text(servererrors);
+            $('#registeremail').text(registeremail);
+            $('#registerpassword').text(registerpassword);
         }
     });
 }
@@ -91,24 +105,26 @@ function createNewThreadView(thread) {
 }
 
 function ViewThread(id) {
-    document.getElementById('threadview').innerHTML = document.getElementById(id).innerHTML; 
+    $('#threadview').html($( '#' + id).html()); 
     var postsContainer = document.createElement('div');
     var Data = {threadID: id, start: 0,amount: 10000}
     $.ajax({
         url: "/api/Post/Posts",
         type: 'get',
         data: Data,
-        success: function (response) {
-            response.postViewModels.forEach(function (post) {
+        success: function (response, textStatus, xhr) {
+            $('#threadmodal').modal('toggle');
+            response.responseJSON.data.postViewModels.forEach(function (post) {
                 var $div = createNewPostView(post)
                 postsContainer.innerHTML += $div;
             })
-            $('#threadmodal').modal('toggle');
+            
         },
-        error: function (xhr, ajaxOptions, thrownError) {
+        error: function (response, ajaxOptions, thrownError) {
             alert(thrownError);
         }
     });
+    $('#threadview').html($('#threadview').html() + postsContainer); 
 }
 function createNewPostView(post){
     var newDiv = document.createElement("div");

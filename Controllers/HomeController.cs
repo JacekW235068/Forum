@@ -40,9 +40,13 @@ namespace Forum.Controllers
 
         public IActionResult Threads(string subID)
         {
+
             if (subID == null)
                 return BadRequest();
-            ViewBag.SubID = subID;
+            if (!Guid.TryParse(subID, out Guid guid))
+                return StatusCode(400, JsonFormatter.FailResponse("Wrong Format"));
+            var Title = _forumDbContext.SubForums.FirstOrDefault(x => x.SubForumID == guid).Name;
+            ViewData["Title"] = Title;
             return View();
         }
         public IActionResult AccountInfo([FromQuery]string accessToken)

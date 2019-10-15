@@ -8,10 +8,9 @@ $(document).ready(function () {
             window.location.href = "/Home/Threads?subID=" + $(this).attr('id');
         })
     })
-})
-function init() {
-    if (document.getElementById("roles")) {
-        if (document.getElementById("roles").innerHTML.includes("Admin")) {
+    roles = getCookie("roles");
+    if (roles != null) {
+        if (roles.includes("Admin")) {
             addButton = document.createElement('button');
             addButton.setAttribute("id", "addbutton");
             addButton.innerHTML = "Add New Sub";
@@ -23,8 +22,8 @@ function init() {
             $('#Grid').children().each(GenerateDeleteButton);
         }
     }
+})
 
-}
 
 function GenerateDeleteButton() {
     delButton = document.createElement('button');
@@ -47,49 +46,19 @@ $('#btnnewsub').click(function () {
             'Authorization': Bearer
         },
         data: Forum,
-        success: function (response) {
+        success: function (response, textStatus, xhr) {
             location.reload();
         },
-        error: function (thrownError) {
-            if (thrownError.responseJSON.value) {
-                document.getElementById("newsuberrors").innerHTML = thrownError.responseJSON.value.error;
-                if (thrownError.responseJSON.value.lockedout) {
-                }
+        error: function (response, ajaxOptions, thrownError) {
+            response = response.responseJSON.value;
+            newsuberrors = ""
+            if (response.message == "Name is not unique") {
+                newsuberrors = response.message;
+            } else {
+                newsuberrors = response.message;
             }
-            if (thrownError.responseJSON.errors) {
-                if (thrownError.responseJSON.errors.Name)
-                    document.getElementById("newsuberrors").innerHTML = thrownError.responseJSON.errors.Name + "\n";
-            }
-
+            $('#newsuberrors').text(newsuberrors)
         }
     });
 })
 
-function DeleteButtonListener() {
-    event.stopPropagation();
-    ID = $(this).parent().attr('id') ;
-    var Bearer = 'bearer ' + getCookie('accessToken');
-    $.ajax({
-        url: "/api/Forum/Delete/"+ ID,
-        method: 'DELETE',
-        headers: {
-            'Authorization': Bearer
-        },
-        success: function (response) {
-            location.reload();
-        },
-        error: function (xhr, ajaxOptions, thrownError) {
-            console.log(thrownError);
-            //if (thrownError.responseJSON.value) {
-            //    document.getElementById("newsuberrors").innerHTML = thrownError.responseJSON.value.error;
-            //    if (thrownError.responseJSON.value.lockedout) {
-            //    }
-            //}
-            //if (thrownError.responseJSON.errors) {
-            //    if (thrownError.responseJSON.errors.Name)
-            //        document.getElementById("newsuberrors").innerHTML = thrownError.responseJSON.errors.Name + "\n";
-            //}
-
-        }
-    });
-}

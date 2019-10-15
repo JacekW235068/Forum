@@ -17,6 +17,7 @@ $("#LoadMore").click(function () {
         type: 'get',
         data: {start, amount},
         success: function (response) {
+            response = response.data;
             if (response.threads.length == amount)
                 start += amount;
             else

@@ -104,9 +104,9 @@ namespace Forum.Controllers
         }
 
         [Authorize]
-        [HttpDelete]
-        [Route("Delete")]
-        public async Task<IActionResult> DeleteThreadAsync([FromForm]string threadID)
+        [HttpDelete("{id}")]
+        [Route("Delete/{id}")]
+        public async Task<IActionResult> DeleteThreadAsync(string ID)
         {
             JwtSecurityToken accessToken;
             var handler = new JwtSecurityTokenHandler();
@@ -121,7 +121,7 @@ namespace Forum.Controllers
                 id = accessToken.Claims.FirstOrDefault(x => x.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier").Value;
             }
             catch { return StatusCode(400,JsonFormatter.FailResponse("Bad Token")); }
-            if (!Guid.TryParse(threadID, out Guid guid))
+            if (!Guid.TryParse(ID, out Guid guid))
                 return StatusCode(400,JsonFormatter.FailResponse("Wrong Format"));
             var thread = await _forumDbContext.Threads.Include(x=> x.User).FirstOrDefaultAsync(x => x.ThreadID == guid);
             if (thread == null) NotFound("Thread does no longer exist");
