@@ -1,0 +1,29 @@
+﻿@model IEnumerable<Forum.ViewModels.SubForumGet>
+@{
+    ViewData["Title"] = "Forum";
+}
+
+<div class="header text-center">
+    <h3 class="display-4">SubForums</h3>
+</div>
+<div id="Main">
+    @*stuff goes in here*@
+
+    <div id="Grid" class="grid">
+        @if (Model != null)
+        {
+            foreach (var sub in Model)
+            {
+                    <div class="grid-item" id="@sub.ID">
+                        <p style="pointer-events: none">@sub.Name</p>@sub.ThreadCount
+                    </div>
+            }
+        }
+    </div>
+</div>
+
+@await Html.PartialAsync("AddSubForumPartial",null,null)
+@section Scripts{
+
+    <script src="~/js/Subs_Main.js"></script>
+}

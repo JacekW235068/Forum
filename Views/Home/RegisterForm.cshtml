@@ -1,0 +1,67 @@
+﻿@model Forum.ViewModels.AppUserRegisterPost
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>RegisterForm</title>
+    <environment include="Development">
+        <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
+    </environment>
+    <environment exclude="Development">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+              asp-fallback-href="~/lib/bootstrap/dist/css/bootstrap.min.css"
+              asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute"
+              crossorigin="anonymous"
+              integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" />
+    </environment>
+    <link rel="stylesheet" href="~/css/Register.css" />
+</head>
+<body>
+    <div id="creatediv" class="jumbotron col-sm-12 col-md-6 col-lg-4 col-xl-3">
+        <div class="modal-body">
+            <form id="registerform">
+                @Html.TextBoxFor(model => model.Email, new { @class = "form-control", @placeholder = "Email" })
+                @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger", @id="registeremail" })
+                <br />
+                @Html.TextBoxFor(model => model.Password, new { @class = "form-control", @placeholder = "Password" })
+                @Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger", @id="registerpassword" })
+                <br />
+                @Html.TextBoxFor(model => model.Username, new { @class = "form-control", @placeholder = "UserName" })
+                @Html.ValidationMessageFor(model => model.Username, "", new { @class = "text-danger", @id="registerusername" })<br />
+            </form>
+            <div id="servererrors" class="text-danger"></div>
+        </div>
+        <div class="modal-footer">
+            <input type="button" value="Register" class="btn btn-primary " id="btnregister" />
+        </div>
+    </div>
+
+    <environment include="Development">
+        <script src="~/lib/jquery/dist/jquery.js"></script>
+        <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.js"></script>
+    </environment>
+    <environment exclude="Development">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"
+                asp-fallback-src="~/lib/jquery/dist/jquery.min.js"
+                asp-fallback-test="window.jQuery"
+                crossorigin="anonymous"
+                integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=">
+        </script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"
+                asp-fallback-src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"
+                asp-fallback-test="window.jQuery && window.jQuery.fn && window.jQuery.fn.modal"
+                crossorigin="anonymous"
+                integrity="sha384-xrRywqdh3PHs8keKZN+8zzc5TX0GRTLCcmivcbNJWm2rs5C8PRhcEn3czEjhAO9o">
+        </script>
+    </environment>
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/Register_Main.js"></script>
+    <script src="~/js/site.js"></script>
+
+</body>
+</html>

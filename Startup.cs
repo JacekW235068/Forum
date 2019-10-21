@@ -80,7 +80,19 @@ namespace Forum
             (ITokenFactory)new TokenGenerator(Configuration["JwtKey"], Convert.ToDouble(Configuration["JwtExpireDays"]),
             Configuration["JwtIssuer"], Convert.ToDouble(Configuration["RefreshExpireDays"])));
 
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddMvc()
+                .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
+                .ConfigureApiBehaviorOptions(options =>
+                {
+                    options.InvalidModelStateResponseFactory = context =>
+                    {
+                        context.HttpContext.Response.StatusCode = 400;
+                        var xD = context.HttpContext.Response.Body;
+                        return JsonFormatter.ValidationProblemResponse(context.ModelState
+                            );
+                    };
+                });
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -89,7 +101,7 @@ namespace Forum
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                //DbContext.Database.EnsureDeleted(); // DO NOT TRY THIS AT HOME
+                DbContext.Database.EnsureDeleted(); // DO NOT TRY THIS AT HOME
                 DbContext.Database.EnsureCreated();
 
             }

@@ -31,45 +31,47 @@ namespace Forum.Controllers
         [Route("AllForums")]
         public JsonResult GetAllForums()
         {
-            return Json(new {
-                _databaseCache.SubForums
-            });
+            return JsonFormatter.SuccessResponse( 
+               _databaseCache.SubForums
+            );
         }
 
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [Route("New")]
         public IActionResult NewForum([FromForm]SubForumPost Forum)
         {
-            if (_forumDBContext.SubForums.FirstOrDefault(x => x.Name == Forum.Name) != null) return BadRequest("Name is not unique");
+            if (_forumDBContext.SubForums.FirstOrDefault(x => x.Name == Forum.Name) != null)
+                return StatusCode(400,JsonFormatter.ErrorResponse("Name is not unique" ));
             var newForum = (SubForum)Forum;
             _forumDBContext.SubForums.Add(newForum);
             _forumDBContext.SaveChanges();
             _databaseCache.RefreshSubForums(_forumDBContext);
             newForum.Threads = new List<ForumThread>();
-            SubForumGet Result = newForum;
-            return Ok(Json(Result));
+            return Ok(
+                JsonFormatter.SuccessResponse((SubForumGet)newForum
+                ));
         }
 
-        //[Authorize(Roles = "Admin")]
-        [HttpDelete]
-        [Route("Delete")]
-        public IActionResult DeleteForum([FromForm]string ID)
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("{id}")]
+        [Route("Delete/{id}")]
+        public IActionResult DeleteForum(string ID)
         {
-            Guid guid;
-            if (!Guid.TryParse(ID, out guid))
-                return BadRequest("Wrong Format");
-            _forumDBContext.SubForums.Remove(new SubForum() { SubForumID = Guid.Parse(ID)});
+            
+            if (!Guid.TryParse(ID, out Guid guid))
+                return StatusCode(400,JsonFormatter.FailResponse("Wrong Format"));
+            _forumDBContext.SubForums.Remove(new SubForum() { SubForumID = guid });
             try
             {
                 _forumDBContext.SaveChanges();
             }
             catch
             {
-                return BadRequest("ID does not exist in Database");
+                return StatusCode(400,JsonFormatter.ErrorResponse("ID does not exist in Database"));
             }
             _databaseCache.RefreshSubForums(_forumDBContext);
-            return Ok();
+            return Ok(JsonFormatter.SuccessResponse(null));
         }
 
 

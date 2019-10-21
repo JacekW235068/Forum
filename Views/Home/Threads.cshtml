@@ -1,0 +1,16 @@
+﻿
+<div class="header text-center">
+    <h3 class="display-4">Threads</h3>
+</div>
+<div id="Main">
+    @*stuff goes in here*@
+
+    <div id="@ViewBag.SubID" class="grid">
+    </div>
+</div>
+<button class="btn btn-dark" id="loadmore">Load More Posts</button>
+@await Html.PartialAsync("AddThreadPartial", null, null)
+@section Scripts{
+
+    <script src="~/js/Threads_Main.js"></script>
+}
