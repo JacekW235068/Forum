@@ -87,10 +87,12 @@ namespace Forum
                     options.InvalidModelStateResponseFactory = context =>
                     {
                         context.HttpContext.Response.StatusCode = 400;
+                        var xD = context.HttpContext.Response.Body;
                         return JsonFormatter.ValidationProblemResponse(context.ModelState
                             );
                     };
-                }); ;
+                });
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

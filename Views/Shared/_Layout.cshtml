@@ -59,6 +59,16 @@
     <div class="modal fade" id="threadmodal">
         <div class="modal-dialog">
             <div class="modal-content" id="threadview">
+                <div id="threadheader" style="width: 100%">
+                    <h1 id="threadtitle"></h1>
+                    <p id="threadtext"></p>
+                </div>
+                <div id="postform" style="width: 100%">
+                    @await Html.PartialAsync("AddPostPartial", null, null)
+                </div>
+                <div id="threadposts" style="width: 100%">
+
+                </div>
             </div>
         </div>
     </div>

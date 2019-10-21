@@ -38,12 +38,16 @@ namespace Forum.Services
         public static JsonResult ErrorResponse(string responseMessage, object formattedErrors)
         {
 
-            return new JsonResult(new
-            {
-                Status = "error",
-                Message = responseMessage,
-                Data = formattedErrors
-            });
+            return new JsonResult(
+                new
+                {
+                    value = new
+                    {
+                        Status = "error",
+                        Message = responseMessage,
+                        Data = formattedErrors
+                 }
+                });
         }
         public static JsonResult ErrorResponse(string responseMessage, IDictionary<string,string> errors)
         {
@@ -55,12 +59,16 @@ namespace Forum.Services
                     Description = e.Value
                 });
             }
-            return new JsonResult(new
-            {
-                Status = "error",
-                Message = responseMessage,
-                Data = responseData
-            });
+
+            return new JsonResult(
+                new
+                {
+                    value = new{
+                    Status = "error",
+                    Message = responseMessage,
+                    Data = responseData
+                    }
+                });
         }
         
 

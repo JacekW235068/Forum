@@ -1,7 +1,10 @@
-﻿var $grid = $('.grid').masonry({
+﻿//////VARIABLES//////
+var $grid = $('.grid').masonry({
 
     itemSelector: '.grid-item'
 });
+//////LISTENERS//////
+
 $(document).ready(function () {
     $('#Grid').children().each(function () {
         $(this).click(function () {
@@ -24,17 +27,6 @@ $(document).ready(function () {
     }
 })
 
-
-function GenerateDeleteButton() {
-    delButton = document.createElement('button');
-    delButton.innerHTML = "Delete";
-    delButton.classList.add("btn");
-    delButton.classList.add("btn-primary");
-    delButton.classList.add("btn-delete");
-    $delButton = $(delButton);
-    $delButton.click(DeleteButtonListener);
-    $(this).append($delButton);
-}
 $('#btnnewsub').click(function () {
     if (!$("#subforumform").valid()) return;
     var Forum = $("#subforumform").serialize();
@@ -62,3 +54,34 @@ $('#btnnewsub').click(function () {
     });
 })
 
+
+//////FUNCTIONS//////
+
+function DeleteButtonListener() {
+    event.stopPropagation();
+    ID = $(this).parent().attr('id');
+    var Bearer = 'bearer ' + getCookie('accessToken');
+    $.ajax({
+        url: "/api/Forum/Delete/" + ID,
+        method: 'DELETE',
+        headers: {
+            'Authorization': Bearer
+        },
+        success: function (response) {
+            $grid.masonry('remove', $('#' + ID));
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            alert(thrownError);
+        }
+    });
+}
+function GenerateDeleteButton() {
+    delButton = document.createElement('button');
+    delButton.innerHTML = "Delete";
+    delButton.classList.add("btn");
+    delButton.classList.add("btn-primary");
+    delButton.classList.add("btn-delete");
+    $delButton = $(delButton);
+    $delButton.click(DeleteButtonListener);
+    $(this).append($delButton);
+}

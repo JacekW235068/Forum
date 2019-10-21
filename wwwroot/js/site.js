@@ -1,21 +1,112 @@
-﻿$(document).ready(function () {
+﻿//////VARIABLES//////
+var threadID = "";
+//////LISTENERS//////
+$(document).ready(function () {
     AccountData();
 });
 
-$('#accountbutton').click(function() {
+$('#accountbutton').click(function () {
     $('#accountmodal').modal('toggle');
 });
 
+$('#threadmodal').on('hidden.bs.modal', function (e) {
+    $('#threadposts').html("");
+})
+
+$('#btnnewpost').click(function () {
+    if (!$("#poform").valid()) return; //why doesnt postform work????
+    var Post = $("#poform").serialize();
+    Post += "&parentid=";
+    Post += threadID;
+
+    var Bearer = 'bearer ' + getCookie('accessToken');
+    $.ajax({
+        type: "POST",
+        url: "/api/Post/New",
+        headers: {
+            'Authorization': Bearer
+        },
+        data: Post,
+        success: function (response, textStatus, xhr) {
+            response = response.value;
+            var $div = createNewPostView(response.data)
+            $('#threadposts').append($div);
+        },
+        error: function (response, ajaxOptions, thrownError) {
+            response = response.responseJSON.value;
+            newsuberrors = ""
+            if (response.message == "Name is not unique") {
+                newsuberrors = response.message;
+            } else {
+                newsuberrors = response.message;
+            }
+            $('#newsuberrors').text(newsuberrors)
+        }
+    });
+});
+
+function LoginButtonListener() {
+    if (!$("#loginform").valid()) return;
+    var LoginData = $("#loginform").serialize();
+    $.ajax({
+        type: "POST",
+        url: "/api/Account/Login",
+        data: LoginData,
+        success: function (response, textStatus, xhr) {
+            setCookie("accessToken", response.data.accessToken, 1);
+            setCookie("refreshToken", response.data.refreshToken, 30);
+            AccountData();
+            location.reload();
+        },
+        error: function (response, ajaxOptions, thrownErrorr) {
+            response = response.responseJSON.value;
+            servererrors = "";
+            loginpassword = "";
+            loginemail = "";
+            if (response.message == "Validation Problem") {
+                $('#servererrors').text("");
+                response.data.forEach(function (obj) {
+                    if (obj.code == "Password") {
+                        loginpassword += obj.description;
+                        loginpassword += "\n";
+                    } else if (obj.code == "Email") {
+                        loginemail += obj.description;
+                        loginemail += "\n";
+                    } else {
+                        servererrors += obj.description;
+                        servererrors += "\n";
+                    }
+                });
+            } else if (response.message == "User Not Found") {
+                servererrors += response.message;
+                servererrors += "\n";
+            } else if (response.message == "Login failed") {
+                servererrors += response.message;
+                servererrors += "\n";
+                if (response.data.description) {
+                    servererrors = "your account has beed locked out due to too many failed login attempt";
+                    $('#btnlogin').attr("disabled", true);
+                }
+            }
+            $('#servererrors').text(servererrors);
+            $('#loginemail').text(loginemail);
+            $('#loginpassword').text(loginpassword);
+        }
+    });
+}
+//////FUNCTIONS//////
 function AccountData() {
     $.ajax({
         url: "/Home/AccountInfo",
         type: 'get',
-        data: { accessToken: getCookie("accessToken")},
+        data: { accessToken: getCookie("accessToken") },
         success: function (response, textStatus, xhr) {
             $('#accountcontent').html(response);
             if ($('#accountcontent').html().includes("form")) {
                 eraseCookie("accessToken");
                 eraseCookie("refreshToken");
+                eraseCookie("roles");
+                eraseCookie("username");
                 InitAccountForm();
             } else {
                 roles = "";
@@ -41,55 +132,6 @@ function InitAccountForm() {
     $('#btnlogin').click(LoginButtonListener);
 }
 
-function LoginButtonListener() {
-    if (!$("#loginform").valid()) return;
-    var LoginData = $("#loginform").serialize();
-    $.ajax({
-        type: "POST",
-        url: "/api/Account/Login",
-        data: LoginData,
-        success: function (response, textStatus, xhr) {
-            setCookie("accessToken", response.data.accessToken, 1);
-            setCookie("refreshToken", response.data.refreshToken, 30);
-            AccountData();
-        },
-        error: function (response, ajaxOptions, thrownErrorr) {
-            response = response.responseJSON.value;
-            servererrors = "";
-            registerpassword = "";
-            registeremail = "";
-            if (response.message == "Validation Problem") {
-                $('#servererrors').text("");
-                response.data.forEach(function (obj) {
-                    if (obj.code == "Password") {
-                        registerpassword += obj.description;
-                        registerpassword += "\n";
-                    } else if (obj.code == "Email") {
-                        registeremail += obj.description;
-                        registeremail += "\n";
-                    } else {
-                        servererrors += obj.description;
-                        servererrors += "\n";
-                    }
-                });
-            } else if (response.message == "User Not Found") {
-                servererrors += response.message;
-                servererrors += "\n";
-            } else if (response.message == "Login failed") {
-                servererrors += response.message;
-                servererrors += "\n";
-                if (response.responseJSON.description) {
-                    servererrors = "your account has beed locked out due to too many failed login attempt";
-                    $('#btnlogin').attr("disabled", true);
-                }
-            }
-            $('#servererrors').text(servererrors);
-            $('#registeremail').text(registeremail);
-            $('#registerpassword').text(registerpassword);
-        }
-    });
-}
-
 function createNewThreadView(thread) {
     var newDiv = document.createElement("div");
     newDiv.setAttribute("id", thread.id);
@@ -105,38 +147,59 @@ function createNewThreadView(thread) {
 }
 
 function ViewThread(id) {
-    $('#threadview').html($( '#' + id).html()); 
-    var postsContainer = document.createElement('div');
-    var Data = {threadID: id, start: 0,amount: 10000}
+    threadID = id;
+    $('#postheader').html($('#' + id).html());
+    $('#threadmodal').modal('toggle');
+    $.ajax({
+        url: "/api/Thread/Thread",
+        type: 'get',
+        data: { threadID },
+        success: function (response, textStatus, xhr) {
+            if (xhr.status == 204)
+                $('#threadheader').text("Nothing to see here :(");
+            response = response.data;
+            $('#threadtitle').text(response.title);
+            $('#threadtext').text(response.text);
+            LoadPosts(id);
+        },
+        error: function (response, ajaxOptions, thrownError) {
+            alert(thrownError);
+            $('#threadmodal').modal('toggle');
+        }
+    });
+}
+
+function LoadPosts(id) {
+    var Data = { threadID: id, start: 0, amount: 10000 }
     $.ajax({
         url: "/api/Post/Posts",
         type: 'get',
         data: Data,
         success: function (response, textStatus, xhr) {
-            $('#threadmodal').modal('toggle');
-            response.responseJSON.data.postViewModels.forEach(function (post) {
+            if (xhr.status == 204)
+                return;
+            response.data.forEach(function (post) {
                 var $div = createNewPostView(post)
-                postsContainer.innerHTML += $div;
+                $('#threadposts').append($div);
             })
-            
         },
         error: function (response, ajaxOptions, thrownError) {
             alert(thrownError);
         }
     });
-    $('#threadview').html($('#threadview').html() + postsContainer); 
 }
-function createNewPostView(post){
+
+
+function createNewPostView(post) {
     var newDiv = document.createElement("div");
-    newDiv.setAttribute("id", post.PostId);
+    newDiv.setAttribute("id", post.postId);
     newDiv.classList.add("post-item");
     var divContent = document.createElement("p");
-    divContent.innerHTML = post.Text;
+    divContent.innerHTML = post.text;
     newDiv.appendChild(divContent);
     var $NewDiv = $(newDiv);
     return $NewDiv;
 }
-
 
 //randomowe funkcje ze stacka
 

@@ -25,6 +25,18 @@ namespace Forum.Controllers
             _forumDbContext = forumDbContext;
             _databaseCache = databaseCache;
         }
+        [HttpGet]
+        [Route("Thread")]
+        public IActionResult GetThread(string threadID)
+        {
+            if (!Guid.TryParse(threadID, out Guid guid))
+                return StatusCode(400, JsonFormatter.FailResponse("Wrong Format"));
+            ForumThreadGet thread = _forumDbContext.Threads.Include(x=>x.User).FirstOrDefault(x => x.ThreadID == guid);
+            if (thread == null)
+                return StatusCode(204, JsonFormatter.SuccessResponse(null));
+            return JsonFormatter.SuccessResponse(thread);
+        }
+
 
         [HttpGet]
         [Route("Threads")]
@@ -35,7 +47,7 @@ namespace Forum.Controllers
             if (amount == 0) return StatusCode(400,JsonFormatter.FailResponse("Invalid argument"));
             List<ForumThreadGet> threads = new List<ForumThreadGet>();
             foreach (var x in _forumDbContext.Threads.Where(x => x.ParentID == guid)
-                .Include(x=>x.User).Skip((int)start).Take((int)amount))
+                .Include(x=>x.User).OrderBy(x=>x.PostTime).Skip((int)start).Take((int)amount))
                 threads.Add(x);
             if (threads.Count == 0)
                 return StatusCode(204, JsonFormatter.SuccessResponse(null));

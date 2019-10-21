@@ -1,7 +1,4 @@
-﻿$(document).ready(function () {
-   // alert("xD");
-
-})
+﻿//////VARIABLES//////
 var $grid = $('.grid').masonry({
 
     itemSelector: '.grid-item'
@@ -9,7 +6,7 @@ var $grid = $('.grid').masonry({
 
 var start = 0;
 var amount = 3;
-
+//////LISTENERS//////
 $("#LoadMore").click(function () {
     var Data = { start, amount }
     $.ajax({
@@ -37,4 +34,6 @@ $("#LoadMore").click(function () {
         }
     });
 });
+//////FUNCTIONS//////
+
 

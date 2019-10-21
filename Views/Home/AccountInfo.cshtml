@@ -7,7 +7,7 @@
             @Html.TextBoxFor(model => model.Email, new { @class = "form-control", @placeholder = "Email" })
             @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger", @id="loginemail" })
             <br/>
-            @Html.TextBoxFor(model => model.Password, new { @class = "form-control", @placeholder = "Password" })
+            @Html.TextBoxFor(model => model.Password, new { @class = "form-control", @placeholder = "Password", @type = "password" })
             @Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger", @id="loginpassword" })
             <br/>
         </form>

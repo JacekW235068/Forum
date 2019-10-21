@@ -1,0 +1,11 @@
+﻿@model Forum.ViewModels.ForumPost_Post
+@*
+    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
+*@
+<form id="poform">
+    @Html.TextBoxFor(model => model.Text, new { @class = "form-control", @placeholder = "Have anything to say?" })
+    @Html.ValidationMessageFor(model => model.Text, "", new { @class = "text-danger" })
+    <br />
+</form>
+<div class="text-danger" id="newposterrors"></div>
+<input type="button" value="Submit" class="btn btn-block btn-primary " id="btnnewpost" />

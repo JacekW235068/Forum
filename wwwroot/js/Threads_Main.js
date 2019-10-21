@@ -1,4 +1,12 @@
-﻿$(document).ready(function () {
+﻿//////VARIABLES//////
+var $grid = $('.grid').masonry({
+
+    itemSelector: '.grid-item'
+});
+var start = 0;
+var amount = 3;
+//////LISTENERS//////
+$(document).ready(function () {
     roles = getCookie("roles");
     if (roles != null) {
         if (roles.includes("Admin") || roles.includes("NormalUser")) {
@@ -13,31 +21,60 @@
             $('#Grid').children().each(GenerateDeleteButton);
         }
     }
-})
-
-var $grid = $('.grid').masonry({
-
-    itemSelector: '.grid-item'
 });
-var start = 0;
-var amount = 3;
+
+$('#btnnewthread').click(function () {
+    if (!$("#threadform").valid()) return;
+    var Thread = $("#threadform").serialize();
+    Thread += "&subforumid=";
+    Thread += window.location.href.split("?subID=")[1];//???
+
+    var Bearer = 'bearer ' + getCookie('accessToken');
+    $.ajax({
+        type: "POST",
+        url: "/api/Thread/New",
+        headers: {
+            'Authorization': Bearer
+        },
+        data: Thread,
+        success: function (response, textStatus, xhr) {
+            response = response.value;
+            $div = createNewThreadView(response.data);
+            $div.click(function (event) {
+                ViewThread($(this).attr('id'))
+            })
+            $grid.append($div).masonry('appended', $div);
+        },
+        error: function (response, ajaxOptions, thrownError) {
+            response = response.responseJSON.value;
+            newsuberrors = ""
+            if (response.message == "Name is not unique") {
+                newsuberrors = response.message;
+            } else {
+                newsuberrors = response.message;
+            }
+            $('#newsuberrors').text(newsuberrors)
+        }
+    });
+
+});
 
 $("#loadmore").click(function () {
 
-    var id = $('.grid').children().attr('id');
+    var subForumID = window.location.href.split("?subID=")[1];
 
     $.ajax({
         url: "/api/Thread/Threads",
         type: 'get',
-        data: { id, start, amount },
+        data: { subForumID, start, amount },
         success: function (response) {
             response = response.data;
-            if (response.threads.length == amount)
+            if (response.length == amount)
                 start += amount;
             else
                 $("#LoadMore").attr("disabled", true);
             roles = getCookie("roles");
-            response.threads.forEach(function (thread) {
+            response.forEach(function (thread) {
                 var $div = createNewThreadView(thread);
                 if (roles != null)
                     if (roles.includes("Admin") || (roles.includes("NormalUser") && getCookie("username") == thread.Username))
@@ -55,6 +92,7 @@ $("#loadmore").click(function () {
         }
     });
 });
+//////FUNCTIONS//////
 function GenerateDeleteButton(element) {
     delButton = document.createElement('button');
     delButton.innerHTML = "Delete";

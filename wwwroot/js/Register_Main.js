@@ -1,4 +1,7 @@
-﻿$(document).ready(function () {
+﻿//////VARIABLES//////
+
+//////LISTENERS//////
+$(document).ready(function () {
     $('#btnregister').click(function () {
         if (!$("#registerform").valid()) return;
         var LoginData = $("#registerform").serialize();
@@ -48,3 +51,6 @@
         });
     });
 })
+//////FUNCTIONS//////
+
+
