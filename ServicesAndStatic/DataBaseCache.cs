@@ -71,9 +71,8 @@ namespace Forum.Services
                 thread.Title == null ||
                 thread.Text == null)
                 throw new NullReferenceException();
-
-            
-            if(threads.Count == maxThreads)               
+            subForums.First(x => x.ID == thread.ThreadID.ToString()).ThreadCount++;
+            if (threads.Count == maxThreads)               
                     threads.RemoveAt(maxThreads - 1);
             threads.Insert(0,thread);
         }
