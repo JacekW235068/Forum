@@ -39,13 +39,13 @@ namespace Forum.Controllers
         [Authorize(Roles = "Admin")]
         [HttpPost]
         [Route("New")]
-        public IActionResult NewForum([FromForm]SubForumPost Forum)
+        public async Task<IActionResult> NewForumAsync([FromForm]SubForumPost Forum)
         {
-            if (_forumDBContext.SubForums.FirstOrDefault(x => x.Name == Forum.Name) != null)
+            if (await _forumDBContext.SubForums.FirstOrDefaultAsync(x => x.Name == Forum.Name) != null)
                 return StatusCode(400,JsonFormatter.ErrorResponse("Name is not unique" ));
             var newForum = (SubForum)Forum;
             _forumDBContext.SubForums.Add(newForum);
-            _forumDBContext.SaveChanges();
+            await _forumDBContext.SaveChangesAsync();
             _databaseCache.RefreshSubForums(_forumDBContext);
             newForum.Threads = new List<ForumThread>();
             return Ok(
@@ -56,30 +56,24 @@ namespace Forum.Controllers
         [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         [Route("Delete/{id}")]
-        public IActionResult DeleteForum(string ID)
+        public async Task<IActionResult> DeleteForumAsync(string ID)
         {
             
             if (!Guid.TryParse(ID, out Guid guid))
                 return StatusCode(400,JsonFormatter.FailResponse("Wrong Format"));
+            if(await _forumDBContext.SubForums.FirstOrDefaultAsync(x=>x.SubForumID ==  guid) == null)
+                return StatusCode(400, JsonFormatter.ErrorResponse("ID does not exist in Database"));
             _forumDBContext.SubForums.Remove(new SubForum() { SubForumID = guid });
-            try
-            {
-                _forumDBContext.SaveChanges();
-            }
-            catch
-            {
-                return StatusCode(400,JsonFormatter.ErrorResponse("ID does not exist in Database"));
-            }
+            await _forumDBContext.SaveChangesAsync();
             _databaseCache.RefreshSubForums(_forumDBContext);
             return Ok(JsonFormatter.SuccessResponse(null));
         }
-        //TODO: check for async where possible
         [Authorize(Roles = "Admin")]
         [HttpPost]
         [Route("Edit")]
         public async Task<IActionResult> EditForumAsync(SubForumEditPost Forum)
         {
-            var sub = _forumDBContext.SubForums.FirstOrDefault(x => x.SubForumID.ToString() == Forum.SubForumID);
+            var sub = await _forumDBContext.SubForums.FirstOrDefaultAsync(x => x.SubForumID.ToString() == Forum.SubForumID);
             if (sub == null)
                 return StatusCode(400, JsonFormatter.ErrorResponse("Name is not unique"));
             sub.Name = Forum.Name;

@@ -46,7 +46,7 @@ namespace Forum.Controllers {
         [Authorize]
         [HttpPost]
         [Route("New")]
-        public IActionResult NewPost([FromForm]ForumPost_Post post)
+        public async Task<IActionResult> NewPostAsync([FromForm]ForumPost_Post post)
         {
             //get user info from access token
             JwtSecurityToken accessToken;
@@ -63,8 +63,8 @@ namespace Forum.Controllers {
             if (!Guid.TryParse(post.ParentID, out _))
                 return StatusCode(400,JsonFormatter.FailResponse("Wrong Format"));
             var newPost = (Post)post;
-            newPost.User = _forumDbContext.Users.FirstOrDefault(x => x.Id == id);
-            newPost.ParentThread = _forumDbContext.Threads.FirstOrDefault(x => x.ThreadID == newPost.ParentID);
+            newPost.User = await _forumDbContext.Users.FirstOrDefaultAsync(x => x.Id == id);
+            newPost.ParentThread = await _forumDbContext.Threads.FirstOrDefaultAsync(x => x.ThreadID == newPost.ParentID);
             newPost.PostTime = DateTime.Now;
 
             if (newPost.ParentThread == null) return NotFound(JsonFormatter.ErrorResponse("Thread Not Found"));
@@ -72,7 +72,7 @@ namespace Forum.Controllers {
             newPost.ParentThread.LastPostTime = DateTime.Now;
             newPost.ParentThread.NumberOfComments++;
             _forumDbContext.Posts.Add(newPost);
-            _forumDbContext.SaveChanges();
+            await _forumDbContext.SaveChangesAsync();
             _databaseCache.UpdateThread(newPost.ParentID.ToString(), 1);
             return Ok(JsonFormatter.SuccessResponse((ForumPostGet)newPost));
         }
@@ -80,7 +80,7 @@ namespace Forum.Controllers {
         [Authorize]
         [HttpDelete]
         [Route("Delete")]
-        public IActionResult DeletePost([FromForm]string postID)
+        public async Task<IActionResult> DeletePostAsync([FromForm]string postID)
         {
             //get user info from access token
             JwtSecurityToken accessToken;
@@ -96,13 +96,13 @@ namespace Forum.Controllers {
                 id = accessToken.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier).Value;
             }
             catch { return StatusCode(400,JsonFormatter.FailResponse("Bad Token")); }
-            var post = _forumDbContext.Posts.Include(x => x.User).Include(x=>x.ParentThread).FirstOrDefault(x => x.PostID.ToString() == postID);
+            var post = await _forumDbContext.Posts.Include(x => x.User).Include(x=>x.ParentThread).FirstOrDefaultAsync(x => x.PostID.ToString() == postID);
             if (post == null) return NotFound(JsonFormatter.ErrorResponse("Post does not longer exist"));
             if (role.Contains("Admin")) {
                 _forumDbContext.Posts.Remove(post);
                 post.ParentThread.NumberOfComments--;
 
-                _forumDbContext.SaveChanges();
+                await _forumDbContext.SaveChangesAsync();
                 _databaseCache.UpdateThread(post.ParentID.ToString(), -1);
                 return Ok(JsonFormatter.SuccessResponse(null));
             }
@@ -110,11 +110,11 @@ namespace Forum.Controllers {
                 if (post.User.Id != id) return StatusCode(403, JsonFormatter.FailResponse("Forbidden"));
                 post.ParentThread.NumberOfComments--;
                 _forumDbContext.Posts.Remove(post);
-                _forumDbContext.SaveChanges();
+                await _forumDbContext.SaveChangesAsync();
                 _databaseCache.UpdateThread(post.ParentID.ToString(), -1);
                 return Ok(JsonFormatter.SuccessResponse(null));
             }
-                return StatusCode(403, JsonFormatter.FailResponse("Forbidden"));
+                return StatusCode(401, JsonFormatter.FailResponse("Unauthorized"));
 
         }
 

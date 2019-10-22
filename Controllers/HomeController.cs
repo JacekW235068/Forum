@@ -38,18 +38,18 @@ namespace Forum.Controllers
             return View();
         }
 
-        public IActionResult Threads(string subID)
+        public async Task<IActionResult> ThreadsAsync(string subID)
         {
 
             if (subID == null)
                 return BadRequest();
             if (!Guid.TryParse(subID, out Guid guid))
                 return StatusCode(400, JsonFormatter.FailResponse("Wrong Format"));
-            var Title = _forumDbContext.SubForums.FirstOrDefault(x => x.SubForumID == guid).Name;
+            var Title = (await _forumDbContext.SubForums.FirstOrDefaultAsync(x => x.SubForumID == guid)).Name;
             ViewData["Title"] = Title;
             return View();
         }
-        public IActionResult AccountInfo([FromQuery]string accessToken)
+        public async Task<IActionResult> AccountInfoAsync([FromQuery]string accessToken)
         {
             if (accessToken != null)
             {
@@ -63,9 +63,9 @@ namespace Forum.Controllers
                     userID = AccessToken.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier).Value;
                 }
                 catch { return BadRequest("Bad Token"); }
-                if (!_forumDbContext.Users.Any(x => x.Id == userID)) return View();
-                var user = _forumDbContext.Users.FirstOrDefault(x => x.Id == userID).UserName;
-                
+                var user = (await _forumDbContext.Users.FirstOrDefaultAsync(x => x.Id == userID)).UserName;
+                if (user == null)
+                    return View();
                 var userroles = _forumDbContext.UserRoles.Where(y => y.UserId == userID).ToArray();
                 var roles = _forumDbContext.Roles.Where(x => userroles.Any(y => y.RoleId == x.Id)).Select(x => x.Name).ToArray();
                 //add parameters for viewbag

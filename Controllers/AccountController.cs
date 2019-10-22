@@ -50,8 +50,8 @@ namespace Forum.Controllers
             }
             await _userManager.AddToRoleAsync(appuser, "NormalUser");
             var roles = await _userManager.GetRolesAsync(appuser);
-            appuser = _forumDbContext.Users.Include(x => x.RefreshTokens)
-                .FirstOrDefault(x => x.Email == appuser.Email);
+            appuser = await _forumDbContext.Users.Include(x => x.RefreshTokens)
+                .FirstOrDefaultAsync(x => x.Email == appuser.Email);
             var response = _tokenGenerator.StandardRefreshToken();
             appuser.RefreshTokens.Add(response);
             await _forumDbContext.SaveChangesAsync();
@@ -68,8 +68,8 @@ namespace Forum.Controllers
         public async Task<IActionResult> LoginAsync([FromForm]AppUserLoginPost user)
         {
             Response.ContentType = "Application/json";
-            var appUser = _forumDbContext.Users.Include(x => x.RefreshTokens)
-                .FirstOrDefault(x => x.Email == user.Email);
+            var appUser = await _forumDbContext.Users.Include(x => x.RefreshTokens)
+                .FirstOrDefaultAsync(x => x.Email == user.Email);
             if (appUser == null)
             { return StatusCode(400,JsonFormatter.ErrorResponse("User Not Found")); }
             var signInResult = await _signInManager.PasswordSignInAsync(appUser, user.Password, false, true);
@@ -102,11 +102,11 @@ namespace Forum.Controllers
                 return StatusCode(400,JsonFormatter.ErrorResponse("Bad Token"));
             }
 
-            var user = _forumDbContext.Users.FirstOrDefault(x => x.Id == id);
+            var user = await _forumDbContext.Users.FirstOrDefaultAsync(x => x.Id == id);
             if (user == null)
                 return StatusCode(400,JsonFormatter.ErrorResponse("User does not exist"));
             _forumDbContext.RefreshTokens.RemoveRange(_forumDbContext.RefreshTokens.Where(x => x.ExpirationDate < DateTime.Now));
-            var refreshToken = _forumDbContext.RefreshTokens.FirstOrDefault(x => x.Token == refresh);
+            var refreshToken = await _forumDbContext.RefreshTokens.FirstOrDefaultAsync(x => x.Token == refresh);
             if (refreshToken == null)
             {
                 await _forumDbContext.SaveChangesAsync();
@@ -145,7 +145,7 @@ namespace Forum.Controllers
                 return StatusCode(400, JsonFormatter.ErrorResponse("Bad Token"));
             }
 
-            var user = _forumDbContext.Users.FirstOrDefault(x => x.Id == id);
+            var user = await _forumDbContext.Users.FirstOrDefaultAsync(x => x.Id == id);
             if (user == null)
                 return StatusCode(400, JsonFormatter.ErrorResponse("User does not exist"));
             _forumDbContext.RefreshTokens.RemoveRange(_forumDbContext.RefreshTokens.Where(x => x.user == user));
