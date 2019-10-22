@@ -73,7 +73,21 @@ namespace Forum.Controllers
             _databaseCache.RefreshSubForums(_forumDBContext);
             return Ok(JsonFormatter.SuccessResponse(null));
         }
-
-
+        //TODO: check for async where possible
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        [Route("Edit")]
+        public async Task<IActionResult> EditForumAsync(SubForumEditPost Forum)
+        {
+            var sub = _forumDBContext.SubForums.FirstOrDefault(x => x.SubForumID.ToString() == Forum.SubForumID);
+            if (sub == null)
+                return StatusCode(400, JsonFormatter.ErrorResponse("Name is not unique"));
+            sub.Name = Forum.Name;
+            await _forumDBContext.SaveChangesAsync();
+            _databaseCache.RefreshSubForums(_forumDBContext);
+            return Ok(
+                JsonFormatter.SuccessResponse((SubForumGet)sub
+                ));
+        }
     }
 }

@@ -118,6 +118,38 @@ namespace Forum.Controllers {
 
         }
 
-
+        [Authorize]
+        [HttpPost]
+        [Route("Edit")]
+        public async Task<IActionResult> EditPost(ForumPostEditPost post)
+        {
+            JwtSecurityToken accessToken;
+            var handler = new JwtSecurityTokenHandler();
+            IEnumerable<string> roles;
+            string id;
+            try
+            {
+                var trimmedToken = Request.Headers["Authorization"].ToString();
+                trimmedToken = trimmedToken.Substring(7);
+                accessToken = handler.ReadJwtToken(trimmedToken);
+                roles = accessToken.Claims.Where(x => x.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role").Select(x => x.Value);
+                id = accessToken.Claims.FirstOrDefault(x => x.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier").Value;
+            }
+            catch { return StatusCode(400, JsonFormatter.FailResponse("Bad Token")); }
+            if (!Guid.TryParse(post.PostID, out Guid postGuid))
+                return StatusCode(400, JsonFormatter.FailResponse("Wrong Format"));
+            var editPost = await _forumDbContext.Posts.Include(x => x.User).FirstOrDefaultAsync(x => x.PostID == postGuid);
+            if (editPost == null)
+            {
+                return StatusCode(400, JsonFormatter.FailResponse("Thread does not exist"));
+            }
+            if (id != editPost.User.Id || editPost.PostTime.AddMinutes(30) > DateTime.Now)
+            {
+                return StatusCode(403, JsonFormatter.FailResponse("Forbidden"));
+            }
+            editPost.Text = post.Text;
+            await _forumDbContext.SaveChangesAsync();
+            return Ok(JsonFormatter.SuccessResponse((ForumPostGet)editPost));
+        }
     }
 }

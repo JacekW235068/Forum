@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Forum.Models;
 using Forum.Services;
 using Forum.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -121,6 +122,36 @@ namespace Forum.Controllers
                 AccessToken = _tokenGenerator.StandardAccessToken(user, roles),
                 RefreshToken = response.Token
             });
+        }
+
+
+        [HttpPost]
+        [Authorize]
+        [Route("Logout")]
+        public async Task<IActionResult> LogoutAsync()
+        {
+            JwtSecurityToken accessToken;
+            var handler = new JwtSecurityTokenHandler();
+            string id;
+            try
+            {
+                var trimmedToken = Request.Headers["Authorization"].ToString();
+                trimmedToken = trimmedToken.Substring(7);
+                accessToken = handler.ReadJwtToken(trimmedToken);
+                id = accessToken.Claims.FirstOrDefault(x => x.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier").Value;
+            }
+            catch
+            {
+                return StatusCode(400, JsonFormatter.ErrorResponse("Bad Token"));
+            }
+
+            var user = _forumDbContext.Users.FirstOrDefault(x => x.Id == id);
+            if (user == null)
+                return StatusCode(400, JsonFormatter.ErrorResponse("User does not exist"));
+            _forumDbContext.RefreshTokens.RemoveRange(_forumDbContext.RefreshTokens.Where(x => x.user == user));
+            await _signInManager.SignOutAsync();
+            await _forumDbContext.SaveChangesAsync();
+            return JsonFormatter.SuccessResponse(null);
         }
     }
 }
