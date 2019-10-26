@@ -1,0 +1,21 @@
+﻿@model Forum.ViewModels.SubForumEditPost
+@*
+    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
+*@
+<div class="modal fade" id="editsubmodal">
+    <div class="modal-dialog">
+        <div class="modal-content" id="editsubcontent">
+            <div class="modal-body">
+                <form id="editsubforumform">
+                    @Html.TextBoxFor(model => model.Name, new { @class = "form-control", @placeholder = "New SubForum name", @id="editsubname"})
+                    @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+                    <br />
+                </form>
+                <div class="text-danger" id="editsuberrors"></div>
+            </div>
+            <div class="modal-footer">
+                <input type="button" value="Submit" class="btn btn-block btn-primary " id="btneditsub" />
+            </div>
+        </div>
+    </div>
+</div>

@@ -7,23 +7,32 @@
     <h3 class="display-4">SubForums</h3>
 </div>
 <div id="Main">
+    <button class="btn btn-success add-button" hidden>Add</button>
     @*stuff goes in here*@
-
     <div id="Grid" class="grid">
         @if (Model != null)
         {
             foreach (var sub in Model)
             {
-                    <div class="grid-item" id="@sub.ID">
-                        <p style="pointer-events: none">@sub.Name</p>@sub.ThreadCount
+                <div id="@sub.ID" class="grid-item subforumdiv">
+                    <div class="item-body">
+                        <p class="item-title">@sub.Name</p><br />
                     </div>
+                    <div class="item-footer">
+                        <button class="btn btn-danger remove-button" hidden>Delete</button>
+                        <button class="btn btn-warning edit-button" hidden>Edit</button>
+                        @sub.ThreadCount
+                    </div>
+                </div>
             }
         }
     </div>
 </div>
 
-@await Html.PartialAsync("AddSubForumPartial",null,null)
-@section Scripts{
+@await Html.PartialAsync("EditSubForumPartial", null, null)
+@await Html.PartialAsync("AddSubForumPartial", null, null)
 
+@section Scripts{
+    <script src="~/js/Subs_Functions.js"></script>
     <script src="~/js/Subs_Main.js"></script>
 }

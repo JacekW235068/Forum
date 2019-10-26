@@ -1,4 +1,7 @@
-﻿.header{
+﻿* {
+    border: 1px solid black;
+}
+.header{
     width: 100%;
     padding: 20px;
     border: 1px solid black;
@@ -21,7 +24,7 @@
     .grid-item {
         width: 100%;
         float: left;
-        background: #00997B;
+        
         border: 2px solid #333;
     }
 
@@ -29,7 +32,7 @@
     .grid-item {
         width: 50%;
         float: left;
-        background: #00997B;
+        
         border: 2px solid #333;
     }
 }
@@ -37,7 +40,7 @@
     .grid-item {
         width: 33.333333333333%;
         float: left;
-        background: #00997B;
+        
         border: 2px solid #333;
     }
 }

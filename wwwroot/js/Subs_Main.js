@@ -3,6 +3,7 @@ var $grid = $('.grid').masonry({
 
     itemSelector: '.grid-item'
 });
+var selectedSub = "";
 //////LISTENERS//////
 
 $(document).ready(function () {
@@ -14,22 +15,26 @@ $(document).ready(function () {
     roles = getCookie("roles");
     if (roles != null) {
         if (roles.includes("Admin")) {
-            addButton = document.createElement('button');
-            addButton.setAttribute("id", "addbutton");
-            addButton.innerHTML = "Add New Sub";
-            addButton.classList.add("btn");
-            addButton.classList.add("btn-primary");
-            $addButton = $(addButton);
-            $addButton.click(function () { $("#addsubmodal").modal('toggle'); });
-            $(document.body).append($addButton);
-            $('#Grid').children().each(GenerateDeleteButton);
+            $('.edit-button').removeAttr('hidden');
+            $('.remove-button').removeAttr('hidden');
+            $('.add-button').removeAttr('hidden');
+            $('.remove-button').click(DeleteSubButtonListener);
+            $('.edit-button').click(function () {
+                event.stopPropagation();
+                $("#editsubmodal").modal('toggle');
+                selectedSub = $(this).parent().parent().attr('id');
+                $('#editsubname').val(
+                    $(this).parent().parent().find('.item-title').text()
+                );
+            });
+            $('.add-button').click(function () { $("#addsubmodal").modal('toggle'); });
         }
     }
 })
 
 $('#btnnewsub').click(function () {
     if (!$("#subforumform").valid()) return;
-    var Forum = $("#subforumform").serialize();
+    var Forum = $("#subforumform").serialize(); 
     var Bearer = 'bearer ' + getCookie('accessToken');
     $.ajax({
         type: "POST",
@@ -54,34 +59,33 @@ $('#btnnewsub').click(function () {
     });
 })
 
+$('#btneditsub').click(function () {
+    
+    if (!$("#editsubforumform").valid()) return;
+    var Forum = $("#editsubforumform").serialize();
+    Forum += "&subforumid=";
+    Forum += selectedSub;
 
-//////FUNCTIONS//////
-
-function DeleteButtonListener() {
-    event.stopPropagation();
-    ID = $(this).parent().attr('id');
     var Bearer = 'bearer ' + getCookie('accessToken');
     $.ajax({
-        url: "/api/Forum/Delete/" + ID,
-        method: 'DELETE',
+        type: "POST",
+        url: "/api/Forum/Edit",
         headers: {
             'Authorization': Bearer
         },
-        success: function (response) {
-            $grid.masonry('remove', $('#' + ID));
+        data: Forum,
+        success: function (response, textStatus, xhr) {
+            location.reload();
         },
-        error: function (xhr, ajaxOptions, thrownError) {
-            alert(thrownError);
+        error: function (response, ajaxOptions, thrownError) {
+            response = response.responseJSON.value;
+            newsuberrors = ""
+            if (response.message == "Name is not unique") {
+                newsuberrors = response.message;
+            } else {
+                newsuberrors = response.message;
+            }
+            $('#newsuberrors').text(newsuberrors)
         }
     });
-}
-function GenerateDeleteButton() {
-    delButton = document.createElement('button');
-    delButton.innerHTML = "Delete";
-    delButton.classList.add("btn");
-    delButton.classList.add("btn-primary");
-    delButton.classList.add("btn-delete");
-    $delButton = $(delButton);
-    $delButton.click(DeleteButtonListener);
-    $(this).append($delButton);
-}
+})

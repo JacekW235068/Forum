@@ -97,7 +97,7 @@ function LoginButtonListener() {
 //////FUNCTIONS//////
 function AccountData() {
     $.ajax({
-        url: "/Home/AccountInfo",
+        url: "/Home/AccountInfoAsync",
         type: 'get',
         data: { accessToken: getCookie("accessToken") },
         success: function (response, textStatus, xhr) {
