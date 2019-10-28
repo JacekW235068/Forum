@@ -6,7 +6,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Forum.Models;
 using Forum.Services;
-using Forum.ViewModels;
+using Forum.DTO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -34,13 +34,13 @@ namespace Forum.Controllers {
             if (!Guid.TryParse(threadID, out Guid guid))
                 return StatusCode(400,JsonFormatter.FailResponse("Wrong Format"));
             if (amount == 0) return StatusCode(400,JsonFormatter.FailResponse("Invalid argument"));
-            var postViewModels = new List<ForumPostGet>();
+            var postDTO = new List<ForumPostGet>();
             var posts = _forumDbContext.Posts.Where(x => x.ParentID == guid).OrderBy(x=>x.PostTime).Skip((int)start).Take((int)amount).Include(x=>x.User);
             foreach (var x in posts)
-                postViewModels.Add(x);
-            if (postViewModels.Count == 0)
+                postDTO.Add(x);
+            if (postDTO.Count == 0)
                 return StatusCode(204, JsonFormatter.SuccessResponse(null));
-            return JsonFormatter.SuccessResponse(postViewModels);
+            return JsonFormatter.SuccessResponse(postDTO);
         }
 
         [Authorize]

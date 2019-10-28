@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Forum.ViewModels
+namespace Forum.DTO
 {
     public class ForumThreadGet
     {

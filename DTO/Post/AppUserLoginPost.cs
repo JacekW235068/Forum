@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Forum.ViewModels
+namespace Forum.DTO
 {
     //TODO: Update Requirements
     public class AppUserLoginPost

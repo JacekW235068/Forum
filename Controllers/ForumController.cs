@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Forum.Models;
 using Forum.Services;
-using Forum.ViewModels;
+using Forum.DTO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

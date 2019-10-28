@@ -1,25 +1,28 @@
-﻿using System;
+﻿using Forum.Models;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
-using Forum.Models;
 
-namespace Forum.ViewModels
+namespace Forum.DTO
 {
-    public class ForumPost_Post
+    public class ForumPostEditPost
     {
+        [Required]
+        public string PostID { get; set; }
         [Required]
         [StringLength(500, MinimumLength = 30, ErrorMessage = "Text has to be between 30 and 500 characters long")]
         public string Text { get; set; }
-        [Required]
-        public string ParentID { get; set; }
-        public static explicit operator Post(ForumPost_Post post)
+       
+        
+        public static explicit operator Post(ForumPostEditPost post)
         {
             return new Post()
             {
+                PostID = Guid.Parse(post.PostID),
                 Text = post.Text,
-                ParentID = Guid.Parse(post.ParentID)
+                
             };
         }
     }

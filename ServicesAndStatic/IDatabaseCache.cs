@@ -1,5 +1,5 @@
 ﻿using Forum.Models;
-using Forum.ViewModels;
+using Forum.DTO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
