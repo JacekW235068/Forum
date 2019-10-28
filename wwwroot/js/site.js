@@ -28,7 +28,7 @@ $('#btnnewpost').click(function () {
         },
         data: Post,
         success: function (response, textStatus, xhr) {
-            response = response.value;
+            response = response.data;
             var $div = createNewPostView(response.data)
             $('#threadposts').append($div);
         },

@@ -35,22 +35,3 @@ $("#LoadMore").click(function () {
     });
 });
 //////FUNCTIONS//////
-
-
-$('#sampleajax').click(function () {
-    threadID = "xDDDD";
-    $.ajax({
-        type: "POST",
-        url: "/api/Thread/sampleajax",
-        data: threadID,
-        success: function (response, textStatus, xhr) {
-            alert("succcess");
-        },
-        error: function (response, ajaxOptions, thrownError) {
-            alert("fail");
-        }
-    });
-
-
-
-})

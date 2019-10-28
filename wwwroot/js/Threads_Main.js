@@ -37,7 +37,7 @@ $('#btnnewthread').click(function () {
         },
         data: Thread,
         success: function (response, textStatus, xhr) {
-            response = response.value.data;
+            response = response.data;
             $div = createThreadView(response, getCookie('roles'), getCookie('username'));
             $grid.prepend($div).masonry('prepended', $div).masonry();
         },

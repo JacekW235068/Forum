@@ -48,9 +48,9 @@ namespace Forum.Controllers
             await _forumDBContext.SaveChangesAsync();
             _databaseCache.RefreshSubForums(_forumDBContext);
             newForum.Threads = new List<ForumThread>();
-            return Ok(
+            return 
                 JsonFormatter.SuccessResponse((SubForumGet)newForum
-                ));
+                );
         }
 
         [Authorize(Roles = "Admin")]
@@ -67,7 +67,7 @@ namespace Forum.Controllers
             _forumDBContext.SubForums.Remove(sub);
             await _forumDBContext.SaveChangesAsync();
             _databaseCache.RefreshSubForums(_forumDBContext);
-            return Ok(JsonFormatter.SuccessResponse(null));
+            return NoContent();
         }
         [Authorize(Roles = "Admin")]
         [HttpPost]
@@ -80,9 +80,9 @@ namespace Forum.Controllers
             sub.Name = Forum.Name;
             await _forumDBContext.SaveChangesAsync();
             _databaseCache.RefreshSubForums(_forumDBContext);
-            return Ok(
+            return 
                 JsonFormatter.SuccessResponse((SubForumGet)sub
-                ));
+                );
         }
     }
 }

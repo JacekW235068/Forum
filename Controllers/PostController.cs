@@ -74,7 +74,7 @@ namespace Forum.Controllers {
             _forumDbContext.Posts.Add(newPost);
             await _forumDbContext.SaveChangesAsync();
             _databaseCache.UpdateThread(newPost.ParentID.ToString(), 1);
-            return Ok(JsonFormatter.SuccessResponse((ForumPostGet)newPost));
+            return JsonFormatter.SuccessResponse((ForumPostGet)newPost);
         }
 
         [Authorize]
@@ -104,7 +104,7 @@ namespace Forum.Controllers {
 
                 await _forumDbContext.SaveChangesAsync();
                 _databaseCache.UpdateThread(post.ParentID.ToString(), -1);
-                return Ok(JsonFormatter.SuccessResponse(null));
+                return NoContent();
             }
             if (role.Contains("NormalUser")) {
                 if (post.User.Id != id) return StatusCode(403, JsonFormatter.FailResponse("Forbidden"));
@@ -112,7 +112,7 @@ namespace Forum.Controllers {
                 _forumDbContext.Posts.Remove(post);
                 await _forumDbContext.SaveChangesAsync();
                 _databaseCache.UpdateThread(post.ParentID.ToString(), -1);
-                return Ok(JsonFormatter.SuccessResponse(null));
+                return NoContent();
             }
                 return StatusCode(401, JsonFormatter.FailResponse("Unauthorized"));
 
@@ -149,7 +149,7 @@ namespace Forum.Controllers {
             }
             editPost.Text = post.Text;
             await _forumDbContext.SaveChangesAsync();
-            return Ok(JsonFormatter.SuccessResponse((ForumPostGet)editPost));
+            return JsonFormatter.SuccessResponse((ForumPostGet)editPost);
         }
     }
 }

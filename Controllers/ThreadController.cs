@@ -112,7 +112,7 @@ namespace Forum.Controllers
             _forumDbContext.SaveChanges();
             newThread.Comments = new List<Post>();
             _databaseCache.AddThread(newThread);
-            return Ok(JsonFormatter.SuccessResponse((ForumThreadGet)newThread));
+            return JsonFormatter.SuccessResponse((ForumThreadGet)newThread);
         }
 
         [Authorize]
@@ -142,7 +142,7 @@ namespace Forum.Controllers
                 _databaseCache.DeleteThread(thread);
                 _forumDbContext.Threads.Remove(thread);
                 _forumDbContext.SaveChanges();
-                return Ok(JsonFormatter.SuccessResponse(null));
+                return NoContent();
             }
             if (roles.Contains("NormalUser"))
             {
@@ -150,7 +150,7 @@ namespace Forum.Controllers
                     return StatusCode(403, JsonFormatter.FailResponse("Forbidden"));
                 _forumDbContext.Threads.Remove(thread);
                 _forumDbContext.SaveChanges();
-                return Ok();
+                return NoContent();
             }
             return StatusCode(403, JsonFormatter.FailResponse("Forbidden"));
         }
@@ -178,7 +178,7 @@ namespace Forum.Controllers
             _databaseCache.MoveThread(thread.ParentID.ToString(), sub.SubForumID.ToString() );
             thread.ParentForum = sub;
             await _forumDbContext.SaveChangesAsync();
-            return Ok();
+            return NoContent();
         }
 
         [Authorize]
