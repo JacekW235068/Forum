@@ -9,7 +9,7 @@ var selectedSub = "";
 $(document).ready(function () {
     $('#Grid').children().each(function () {
         $(this).click(function () {
-            window.location.href = "/Home/Threads?subID=" + $(this).attr('id');
+            window.location.href = "/Threads?subID=" + $(this).attr('id');
         })
     })
     roles = getCookie("roles");

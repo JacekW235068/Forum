@@ -29,7 +29,7 @@ namespace Forum.Services
         /// Delete thread from cache
         /// </summary>
         /// <returns>Returns true if thread was removed</returns>
-        bool DeleteThread(string Id);
+        bool DeleteThread(ForumThread thread);
         /// <summary>
         /// Fetch Subforums from database
         /// </summary>
@@ -38,6 +38,7 @@ namespace Forum.Services
         /// <param name="context">Database context</param>
         /// <returns>threads fetched from cache/database</returns>
         IReadOnlyCollection<ForumThreadGet> GetThreads(ForumDbContext context, uint start, uint amount);
+        void MoveThread(string from, string to);
 
 
     }

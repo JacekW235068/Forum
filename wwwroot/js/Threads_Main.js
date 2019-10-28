@@ -18,7 +18,7 @@ $(document).ready(function () {
             $addButton = $(addButton);
             $addButton.click(function () { $("#addthreadmodal").modal('toggle'); });
             $(document.body).append($addButton);
-            $('#Grid').children().each(GenerateDeleteButton);
+            $('#btneditthread').click(EditThreadListener);
         }
     }
 });
@@ -28,7 +28,6 @@ $('#btnnewthread').click(function () {
     var Thread = $("#threadform").serialize();
     Thread += "&subforumid=";
     Thread += window.location.href.split("?subID=")[1];//???
-
     var Bearer = 'bearer ' + getCookie('accessToken');
     $.ajax({
         type: "POST",
@@ -38,22 +37,12 @@ $('#btnnewthread').click(function () {
         },
         data: Thread,
         success: function (response, textStatus, xhr) {
-            response = response.value;
-            $div = createNewThreadView(response.data);
-            $div.click(function (event) {
-                ViewThread($(this).attr('id'))
-            })
-            $grid.append($div).masonry('appended', $div);
+            response = response.value.data;
+            $div = createThreadView(response, getCookie('roles'), getCookie('username'));
+            $grid.prepend($div).masonry('prepended', $div).masonry();
         },
         error: function (response, ajaxOptions, thrownError) {
-            response = response.responseJSON.value;
-            newsuberrors = ""
-            if (response.message == "Name is not unique") {
-                newsuberrors = response.message;
-            } else {
-                newsuberrors = response.message;
-            }
-            $('#newsuberrors').text(newsuberrors)
+       
         }
     });
 
@@ -68,57 +57,19 @@ $("#loadmore").click(function () {
         type: 'get',
         data: { subForumID, start, amount },
         success: function (response) {
+            if (response === 'undefined') {
+                //stop requesting
+                return;
+            }
             response = response.data;
             if (response.length == amount)
                 start += amount;
-            else
-                $("#LoadMore").attr("disabled", true);
-            roles = getCookie("roles");
-            response.forEach(function (thread) {
-                var $div = createNewThreadView(thread);
-                if (roles != null)
-                    if (roles.includes("Admin") || (roles.includes("NormalUser") && getCookie("username") == thread.Username))
-                        GenerateDeleteButton($div);
-                $div.click(function (event) {
-                    ViewThread($(this).attr('id'))
-                })
-                $grid.append($div).masonry('appended', $div);
-
-            })
+            else { //stop requesting
+            }
+            generateThreads(response);
         },
         error: function (xhr, ajaxOptions, thrownError) {
-            $("#loadmore").attr("disabled", true);
-            $("#loadmore").html("Sth went wrong");
+            //TODO
         }
     });
 });
-//////FUNCTIONS//////
-function GenerateDeleteButton(element) {
-    delButton = document.createElement('button');
-    delButton.innerHTML = "Delete";
-    delButton.classList.add("btn");
-    delButton.classList.add("btn-primary");
-    delButton.classList.add("btn-delete");
-    $delButton = $(delButton);
-    $delButton.click(DeleteButtonListener);
-    element.append($delButton);
-}
-
-function DeleteButtonListener() {
-    event.stopPropagation();
-    ID = $(this).parent().attr('id');
-    var Bearer = 'bearer ' + getCookie('accessToken');
-    $.ajax({
-        url: "/api/Thread/Delete/" + ID,
-        method: 'DELETE',
-        headers: {
-            'Authorization': Bearer
-        },
-        success: function (response) {
-            $grid.masonry('remove', $('#' + ID));
-        },
-        error: function (xhr, ajaxOptions, thrownError) {
-            console.log(thrownError);
-        }
-    });
-}

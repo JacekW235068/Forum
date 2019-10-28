@@ -61,9 +61,10 @@ namespace Forum.Controllers
             
             if (!Guid.TryParse(ID, out Guid guid))
                 return StatusCode(400,JsonFormatter.FailResponse("Wrong Format"));
-            if(await _forumDBContext.SubForums.FirstOrDefaultAsync(x=>x.SubForumID ==  guid) == null)
+            var sub = await _forumDBContext.SubForums.FirstOrDefaultAsync(x => x.SubForumID == guid);
+            if (sub == null)
                 return StatusCode(400, JsonFormatter.ErrorResponse("ID does not exist in Database"));
-            _forumDBContext.SubForums.Remove(new SubForum() { SubForumID = guid });
+            _forumDBContext.SubForums.Remove(sub);
             await _forumDBContext.SaveChangesAsync();
             _databaseCache.RefreshSubForums(_forumDBContext);
             return Ok(JsonFormatter.SuccessResponse(null));
@@ -71,7 +72,7 @@ namespace Forum.Controllers
         [Authorize(Roles = "Admin")]
         [HttpPost]
         [Route("Edit")]
-        public async Task<IActionResult> EditForumAsync(SubForumEditPost Forum)
+        public async Task<IActionResult> EditForumAsync([FromForm]SubForumEditPost Forum)
         {
             var sub = await _forumDBContext.SubForums.FirstOrDefaultAsync(x => x.SubForumID.ToString() == Forum.SubForumID);
             if (sub == null)

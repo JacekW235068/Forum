@@ -38,6 +38,7 @@ namespace Forum.Controllers
             return View();
         }
 
+        [Route("Threads")]
         public async Task<IActionResult> ThreadsAsync(string subID)
         {
 
@@ -63,7 +64,7 @@ namespace Forum.Controllers
                     userID = AccessToken.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier).Value;
                 }
                 catch { return BadRequest("Bad Token"); }
-                var user = (await _forumDbContext.Users.FirstOrDefaultAsync(x => x.Id == userID)).UserName;
+                var user = (await _forumDbContext.Users.FirstOrDefaultAsync(x => x.Id == userID));
                 if (user == null)
                     return View();
                 var userroles = _forumDbContext.UserRoles.Where(y => y.UserId == userID).ToArray();

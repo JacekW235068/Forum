@@ -1,0 +1,24 @@
+﻿@model Forum.ViewModels.ForumThreadEditPost
+@*
+    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
+*@
+<div class="modal fade" id="editthreadmodal">
+    <div class="modal-dialog">
+        <div class="modal-content" id="editthreadcontent">
+            <div class="modal-body">
+                <form id="editthreadform">
+                    @Html.TextBoxFor(model => model.Title, new { @class = "form-control", @placeholder = "Title", @id="edittitle" })
+                    @Html.ValidationMessageFor(model => model.Title, "", new { @class = "text-danger" })
+                    <br />
+                    @Html.TextBoxFor(model => model.Text, new { @class = "form-control", @placeholder = "What's on your mind", @id="edittext" })
+                    @Html.ValidationMessageFor(model => model.Text, "", new { @class = "text-danger" })
+                    <br />
+                </form>
+                <div class="text-danger" id="editthreaderrors"></div>
+            </div>
+            <div class="modal-footer">
+                <input type="button" value="Submit" class="btn btn-block btn-primary " id="btneditthread" />
+            </div>
+        </div>
+    </div>
+</div>

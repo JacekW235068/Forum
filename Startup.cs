@@ -101,7 +101,7 @@ namespace Forum
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                DbContext.Database.EnsureDeleted(); // DO NOT TRY THIS AT HOME
+                //DbContext.Database.EnsureDeleted(); // DO NOT TRY THIS AT HOME
                 DbContext.Database.EnsureCreated();
 
             }

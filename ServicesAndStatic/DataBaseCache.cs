@@ -71,14 +71,15 @@ namespace Forum.Services
                 thread.Title == null ||
                 thread.Text == null)
                 throw new NullReferenceException();
-            subForums.First(x => x.ID == thread.ThreadID.ToString()).ThreadCount++;
+            subForums.First(x => x.ID == thread.ParentID.ToString()).ThreadCount++;
             if (threads.Count == maxThreads)               
                     threads.RemoveAt(maxThreads - 1);
             threads.Insert(0,thread);
         }
-        public bool DeleteThread(string Id)
+        public bool DeleteThread(ForumThread thread)
         {
-            var i = threads.Select(x => x.ID).ToList().IndexOf(Id);
+            var i = threads.Select(x => x.ID).ToList().IndexOf(thread.ThreadID.ToString());
+            subForums.First(x => x.ID == thread.ParentID.ToString()).ThreadCount--;
             if (i == -1)
                 return false;
             threads.RemoveAt(i);
@@ -103,6 +104,12 @@ namespace Forum.Services
                     return true;
                 }
             return false;
+        }
+
+        public void MoveThread(string from, string to)
+        {
+            subForums.First(x => x.ID == from).ThreadCount--;
+            subForums.First(x => x.ID == to).ThreadCount--;
         }
     }
 }

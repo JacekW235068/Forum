@@ -139,7 +139,7 @@ namespace Forum.Controllers
             if (thread == null) NotFound("Thread does no longer exist");
             if (roles.Contains("Admin"))
             {
-                _databaseCache.DeleteThread(thread.ThreadID.ToString());
+                _databaseCache.DeleteThread(thread);
                 _forumDbContext.Threads.Remove(thread);
                 _forumDbContext.SaveChanges();
                 return Ok(JsonFormatter.SuccessResponse(null));
@@ -154,16 +154,20 @@ namespace Forum.Controllers
             }
             return StatusCode(403, JsonFormatter.FailResponse("Forbidden"));
         }
+
         [Authorize(Roles = "Admin")]
         [HttpPost]
         [Route("Move")]
-        public async Task<IActionResult> MoveThread(string threadID, string subforumID)
+        public async Task<IActionResult> MoveThread(MoveThreadPost IDs)
         {
-            if (!Guid.TryParse(threadID, out Guid threadGuid) || !Guid.TryParse(subforumID, out Guid subGuid))
+      
+            if (!Guid.TryParse(IDs.threadID, out Guid threadGuid))
+                return StatusCode(400, JsonFormatter.FailResponse("Wrong Format"));
+            if (!Guid.TryParse(IDs.subForumID, out Guid subGuid))
                 return StatusCode(400, JsonFormatter.FailResponse("Wrong Format"));
             var thread = await _forumDbContext.Threads.FirstOrDefaultAsync(x => x.ThreadID == threadGuid);
             var sub = await _forumDbContext.SubForums.FirstOrDefaultAsync(x => x.SubForumID == subGuid);
-            if(thread == null)
+            if (thread == null)
             {
                 return StatusCode(400, JsonFormatter.FailResponse("Thread does not exist"));
             }
@@ -171,6 +175,7 @@ namespace Forum.Controllers
             {
                 return StatusCode(400, JsonFormatter.FailResponse("Forum destination does not exist"));
             }
+            _databaseCache.MoveThread(thread.ParentID.ToString(), sub.SubForumID.ToString() );
             thread.ParentForum = sub;
             await _forumDbContext.SaveChangesAsync();
             return Ok();
@@ -179,7 +184,7 @@ namespace Forum.Controllers
         [Authorize]
         [HttpPost]
         [Route("Edit")]
-        public async Task<IActionResult> EditThread(ForumThreadEditPost thread)
+        public async Task<IActionResult> EditThread([FromForm]ForumThreadEditPost thread)
         {
             JwtSecurityToken accessToken;
             var handler = new JwtSecurityTokenHandler();
@@ -201,14 +206,10 @@ namespace Forum.Controllers
             {
                 return StatusCode(400, JsonFormatter.FailResponse("Thread does not exist"));
             }
-            if (id != editThread.User.Id || editThread.PostTime.AddMinutes(30) > DateTime.Now)
-            {
-                return StatusCode(403, JsonFormatter.FailResponse("Forbidden"));
-            }
             editThread.Title = thread.Title;
             editThread.Text = thread.Text;
             await _forumDbContext.SaveChangesAsync();
-            return Ok(JsonFormatter.SuccessResponse((ForumThreadGet)editThread));
+            return JsonFormatter.SuccessResponse((ForumThreadGet)editThread);
         }
     }
 }

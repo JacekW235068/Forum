@@ -17,8 +17,6 @@ namespace Forum.ViewModels
         [Required]
         [StringLength(500, MinimumLength = 30, ErrorMessage = "Message has to be between 30 and 500 characters long")]
         public string Text { get; set; }
-        [Required]
-        public string SubForumID { get; set; }
 
         public static explicit operator ForumThread(ForumThreadEditPost thread)
         {
@@ -27,7 +25,6 @@ namespace Forum.ViewModels
                 ThreadID = Guid.Parse(thread.ThreadID),
                 Title = thread.Title,
                 Text = thread.Text,
-                ParentID = Guid.Parse(thread.SubForumID)
             };
         }
     }

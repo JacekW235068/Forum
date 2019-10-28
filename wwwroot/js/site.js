@@ -132,19 +132,7 @@ function InitAccountForm() {
     $('#btnlogin').click(LoginButtonListener);
 }
 
-function createNewThreadView(thread) {
-    var newDiv = document.createElement("div");
-    newDiv.setAttribute("id", thread.id);
-    newDiv.classList.add("grid-item");
-    var divTitle = document.createElement("h3");
-    divTitle.innerHTML = thread.title;
-    var divContent = document.createElement("p");
-    divContent.innerHTML = thread.text;
-    newDiv.appendChild(divTitle);
-    newDiv.appendChild(divContent);
-    var $NewDiv = $(newDiv);
-    return $NewDiv;
-}
+
 
 function ViewThread(id) {
     threadID = id;
