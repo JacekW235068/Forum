@@ -78,9 +78,9 @@ namespace Forum.Controllers {
         }
 
         [Authorize]
-        [HttpDelete]
-        [Route("Delete")]
-        public async Task<IActionResult> DeletePostAsync([FromForm]string postID)
+        [HttpDelete("{postID}")]
+        [Route("Delete/{postID}")]
+        public async Task<IActionResult> DeletePostAsync(string postID)
         {
             //get user info from access token
             JwtSecurityToken accessToken;
@@ -143,7 +143,7 @@ namespace Forum.Controllers {
             {
                 return StatusCode(400, JsonFormatter.FailResponse("Thread does not exist"));
             }
-            if (id != editPost.User.Id || editPost.PostTime.AddMinutes(30) > DateTime.Now)
+            if (id != editPost.User.Id)
             {
                 return StatusCode(403, JsonFormatter.FailResponse("Forbidden"));
             }

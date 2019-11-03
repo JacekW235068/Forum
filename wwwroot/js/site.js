@@ -17,7 +17,7 @@ $('#btnnewpost').click(function () {
     if (!$("#poform").valid()) return; //why doesnt postform work????
     var Post = $("#poform").serialize();
     Post += "&parentid=";
-    Post += threadID;
+    Post += selectedThread;
 
     var Bearer = 'bearer ' + getCookie('accessToken');
     $.ajax({
@@ -29,7 +29,9 @@ $('#btnnewpost').click(function () {
         data: Post,
         success: function (response, textStatus, xhr) {
             response = response.data;
-            var $div = createNewPostView(response.data)
+            var username = getCookie('username');
+            var roles = getCookie('roles');
+            var $div = createPostView(response, roles, username);
             $('#threadposts').append($div);
         },
         error: function (response, ajaxOptions, thrownError) {
@@ -134,60 +136,7 @@ function InitAccountForm() {
 
 
 
-function ViewThread(id) {
-    threadID = id;
-    $('#postheader').html($('#' + id).html());
-    $('#threadmodal').modal('toggle');
-    $.ajax({
-        url: "/api/Thread/Thread",
-        type: 'get',
-        data: { threadID },
-        success: function (response, textStatus, xhr) {
-            if (xhr.status == 204)
-                $('#threadheader').text("Nothing to see here :(");
-            response = response.data;
-            $('#threadtitle').text(response.title);
-            $('#threadtext').text(response.text);
-            LoadPosts(id);
-        },
-        error: function (response, ajaxOptions, thrownError) {
-            alert(thrownError);
-            $('#threadmodal').modal('toggle');
-        }
-    });
-}
 
-function LoadPosts(id) {
-    var Data = { threadID: id, start: 0, amount: 10000 }
-    $.ajax({
-        url: "/api/Post/Posts",
-        type: 'get',
-        data: Data,
-        success: function (response, textStatus, xhr) {
-            if (xhr.status == 204)
-                return;
-            response.data.forEach(function (post) {
-                var $div = createNewPostView(post)
-                $('#threadposts').append($div);
-            })
-        },
-        error: function (response, ajaxOptions, thrownError) {
-            alert(thrownError);
-        }
-    });
-}
-
-
-function createNewPostView(post) {
-    var newDiv = document.createElement("div");
-    newDiv.setAttribute("id", post.postId);
-    newDiv.classList.add("post-item");
-    var divContent = document.createElement("p");
-    divContent.innerHTML = post.text;
-    newDiv.appendChild(divContent);
-    var $NewDiv = $(newDiv);
-    return $NewDiv;
-}
 
 //randomowe funkcje ze stacka
 

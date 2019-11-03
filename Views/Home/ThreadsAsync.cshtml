@@ -11,7 +11,7 @@
 <button class="btn btn-dark" id="loadmore">Load More Posts</button>
 <div class="modal fade" id="sublistmodal">
     <div class="modal-dialog">
-        <div class="modal-content" >
+        <div class="modal-content">
             <div class="list-group" id="sublist">
             </div>
         </div>
@@ -21,5 +21,6 @@
 @await Html.PartialAsync("EditThreadPartial", null, null)
 @section Scripts{
     <script src="~/js/Threads_Functions.js"></script>
+    <script src="~/js/Posts_Functions.js"></script>
     <script src="~/js/Threads_Main.js"></script>
 }

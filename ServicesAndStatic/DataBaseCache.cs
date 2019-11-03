@@ -109,7 +109,7 @@ namespace Forum.Services
         public void MoveThread(string from, string to)
         {
             subForums.First(x => x.ID == from).ThreadCount--;
-            subForums.First(x => x.ID == to).ThreadCount--;
+            subForums.First(x => x.ID == to).ThreadCount++;
         }
     }
 }

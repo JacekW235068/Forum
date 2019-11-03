@@ -42,6 +42,9 @@ function createThreadView(thread, roles, username) {
                 </div>
             </div>
         `));
+    $newThreadDiv.click(function () {
+        ViewThread($(this).attr('id'));
+    });
     var $remove = $newThreadDiv.find('.remove-thread-button');
     var $edit = $newThreadDiv.find('.edit-thread-button');
     var $move = $newThreadDiv.find('.move-thread-button');
@@ -65,36 +68,7 @@ function createThreadView(thread, roles, username) {
     }
     if (roles != null && roles.includes('Admin')) {
         $move.removeAttr('hidden');
-        $move.click(function () {
-            $("#sublistmodal").modal('toggle');
-            selectedThread = $(this).parent().parent().attr('id');
-            $.ajax({
-                url: "/api/Forum/AllForums",
-                type: 'get',
-                success: function (response) {
-                    response = response.data;
-                    subID = window.location.href.split("?subID=")[1];
-                    response.forEach(function (sub) {
-                        if (subID == sub.id) {
-                            $('#sublist').append(
-                                $.parseHTML(
-                                    `<button type="button" class="list-group-item list-group-item-action" disabled>${sub.name}</button>`
-                                )
-                            );
-                        } else {
-                            var $item = $($.parseHTML(
-                                `<button id="${sub.id}" type="button" class="list-group-item list-group-item-action">${sub.name}</button>`
-                            ));
-                            $item.click(MoveThreadListener);
-                            $('#sublist').append($item);
-                        }
-                    });
-                },
-                error: function (xhr, ajaxOptions, thrownError) {
-                    //TODO
-                }
-            });
-        });
+        $move.click(MoveButtonListener);
     }
     return $newThreadDiv;
 }
@@ -173,4 +147,36 @@ function MoveThreadListener() {
         }
     });
 
+}
+
+function MoveButtonListener() {
+    event.stopPropagation();
+    $("#sublistmodal").modal('toggle');
+    selectedThread = $(this).parent().parent().attr('id');
+    $.ajax({
+        url: "/api/Forum/AllForums",
+        type: 'get',
+        success: function (response) {
+            response = response.data;
+            subID = window.location.href.split("?subID=")[1];
+            response.forEach(function (sub) {
+                if (subID == sub.id) {
+                    $('#sublist').append(
+                        $.parseHTML(
+                            `<button type="button" class="list-group-item list-group-item-action" disabled>${sub.name}</button>`
+                        )
+                    );
+                } else {
+                    var $item = $($.parseHTML(
+                        `<button id="${sub.id}" type="button" class="list-group-item list-group-item-action">${sub.name}</button>`
+                    ));
+                    $item.click(MoveThreadListener);
+                    $('#sublist').append($item);
+                }
+            });
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            //TODO
+        }
+    });
 }
