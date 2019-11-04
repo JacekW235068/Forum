@@ -60,7 +60,9 @@ namespace Forum.Controllers
                     JwtSecurityToken AccessToken;
                     var handler = new JwtSecurityTokenHandler();
                     AccessToken = handler.ReadJwtToken(accessToken);
-                    if (AccessToken.ValidTo < DateTime.Now) return BadRequest("Token Expired");
+                    //if (AccessToken.ValidTo < DateTime.Now.AddHours(1)) {
+                    //    HttpContext.Response.Headers.Add("Token-Expired", "true");
+                    //    return Unauthorized(); }
                     userID = AccessToken.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier).Value;
                 }
                 catch { return BadRequest("Bad Token"); }
@@ -87,6 +89,7 @@ namespace Forum.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
+           
             HttpContext.Response.StatusCode = 500;
             //scetchy af
             return JsonFormatter.ErrorResponse("Fatal Error",new List<object>());

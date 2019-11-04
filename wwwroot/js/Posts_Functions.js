@@ -20,6 +20,7 @@ function LoadPosts(id) {
             generatePosts(response.data);
         },
         error: function (response, ajaxOptions, thrownError) {
+            $('#threadmodal').modal('hide');
             alert(thrownError);
         }
     });

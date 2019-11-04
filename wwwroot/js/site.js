@@ -135,7 +135,28 @@ function InitAccountForm() {
 }
 
 
+function RefreshToken() {
 
+    var Data = { accessToken: getCookie("accessToken"), refreshToken: getCookie("refreshToken") }
+    eraseCookie("accessToken");
+    eraseCookie("refreshToken");
+    var result = false;
+    $.ajax({
+        type: "POST",
+        url: "/api/Account/RefreshToken",
+        data: Data,
+        success: function (response, textStatus, xhr) {
+            setCookie("accessToken", response.data.accessToken, 1);
+            setCookie("refreshToken", response.data.refreshToken, 30);
+            AccountData();
+            result = true;
+        },
+        error: function (response, ajaxOptions, thrownErrorr) {
+            AccountData();
+        }
+    });
+    return result;
+}
 
 
 //randomowe funkcje ze stacka

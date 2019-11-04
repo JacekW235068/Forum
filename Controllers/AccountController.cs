@@ -87,7 +87,7 @@ namespace Forum.Controllers
 
         [HttpPost]
         [Route("RefreshToken")]
-        public async Task<IActionResult> RefreshTokenAsync([FromForm]string access, [FromForm]string refresh)
+        public async Task<IActionResult> RefreshTokenAsync(string access, string refresh)
         {
             string id;
             try
