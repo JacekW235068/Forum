@@ -60,9 +60,10 @@ namespace Forum.Controllers
                     JwtSecurityToken AccessToken;
                     var handler = new JwtSecurityTokenHandler();
                     AccessToken = handler.ReadJwtToken(accessToken);
-                    //if (AccessToken.ValidTo < DateTime.Now.AddHours(1)) {
-                    //    HttpContext.Response.Headers.Add("Token-Expired", "true");
-                    //    return Unauthorized(); }
+                    if (AccessToken.ValidTo.AddHours(1) < DateTime.Now)
+                    {
+                        return Unauthorized();
+                    }
                     userID = AccessToken.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier).Value;
                 }
                 catch { return BadRequest("Bad Token"); }

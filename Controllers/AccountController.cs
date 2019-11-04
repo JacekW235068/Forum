@@ -87,14 +87,14 @@ namespace Forum.Controllers
 
         [HttpPost]
         [Route("RefreshToken")]
-        public async Task<IActionResult> RefreshTokenAsync(string access, string refresh)
+        public async Task<IActionResult> RefreshTokenAsync(RefreshTokenPost tokens)
         {
             string id;
             try
             {
                 var handler = new JwtSecurityTokenHandler();
                 JwtSecurityToken accessToken;
-                accessToken = handler.ReadJwtToken(access);
+                accessToken = handler.ReadJwtToken(tokens.accessToken);
                 id = accessToken.Claims.FirstOrDefault(x => x.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier").Value;
             }
             catch
@@ -106,7 +106,7 @@ namespace Forum.Controllers
             if (user == null)
                 return StatusCode(400,JsonFormatter.ErrorResponse("User does not exist"));
             _forumDbContext.RefreshTokens.RemoveRange(_forumDbContext.RefreshTokens.Where(x => x.ExpirationDate < DateTime.Now));
-            var refreshToken = await _forumDbContext.RefreshTokens.FirstOrDefaultAsync(x => x.Token == refresh);
+            var refreshToken = await _forumDbContext.RefreshTokens.FirstOrDefaultAsync(x => x.Token == tokens.refreshToken);
             if (refreshToken == null)
             {
                 await _forumDbContext.SaveChangesAsync();

@@ -122,7 +122,18 @@ function AccountData() {
             }
         },
         error: function (response, ajaxOptions, thrownErrorr) {
-            $('#accountcontent').html(thrownErrorr);
+            if (response.status == 401) {
+                if (RefreshToken()) {
+                    AccountData();
+                }
+            }
+            else {
+                eraseCookie("accessToken");
+                eraseCookie("refreshToken");
+                eraseCookie("roles");
+                eraseCookie("username");
+                AccountData();
+            }
         }
     });
 }
@@ -144,7 +155,8 @@ function RefreshToken() {
     $.ajax({
         type: "POST",
         url: "/api/Account/RefreshToken",
-        data: Data,
+        contentType: "application/json; charset=UTF-8",
+        data: JSON.stringify(Data),
         success: function (response, textStatus, xhr) {
             setCookie("accessToken", response.data.accessToken, 1);
             setCookie("refreshToken", response.data.refreshToken, 30);

@@ -101,7 +101,6 @@ namespace Forum
                     options.InvalidModelStateResponseFactory = context =>
                     {
                         context.HttpContext.Response.StatusCode = 400;
-                        var xD = context.HttpContext.Response.Body;
                         return JsonFormatter.ValidationProblemResponse(context.ModelState
                             );
                     };
