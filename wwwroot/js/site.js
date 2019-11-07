@@ -123,9 +123,7 @@ function AccountData() {
         },
         error: function (response, ajaxOptions, thrownErrorr) {
             if (response.status == 401) {
-                if (RefreshToken()) {
-                    AccountData();
-                }
+                RefreshToken()
             }
             else {
                 eraseCookie("accessToken");
@@ -146,13 +144,13 @@ function InitAccountForm() {
 }
 
 
-function RefreshToken() {
+function RefreshToken( CallBack, CallBackData) {
 
     var Data = { accessToken: getCookie("accessToken"), refreshToken: getCookie("refreshToken") }
     eraseCookie("accessToken");
     eraseCookie("refreshToken");
     var result = false;
-    $.ajax({
+    var request = $.ajax({
         type: "POST",
         url: "/api/Account/RefreshToken",
         contentType: "application/json; charset=UTF-8",
@@ -160,6 +158,9 @@ function RefreshToken() {
         success: function (response, textStatus, xhr) {
             setCookie("accessToken", response.data.accessToken, 1);
             setCookie("refreshToken", response.data.refreshToken, 30);
+            if (CallBack !== undefined) {
+                CallBack(CallBackData);
+            }
             AccountData();
             result = true;
         },
@@ -167,7 +168,7 @@ function RefreshToken() {
             AccountData();
         }
     });
-    return result;
+
 }
 
 

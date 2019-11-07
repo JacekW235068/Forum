@@ -29,34 +29,14 @@ $(document).ready(function () {
             });
             $('.add-button').click(function () { $("#addsubmodal").modal('toggle'); });
         }
+        $grid.masonry();
     }
 })
 
 $('#btnnewsub').click(function () {
     if (!$("#subforumform").valid()) return;
     var Forum = $("#subforumform").serialize(); 
-    var Bearer = 'bearer ' + getCookie('accessToken');
-    $.ajax({
-        type: "POST",
-        url: "/api/Forum/New",
-        headers: {
-            'Authorization': Bearer
-        },
-        data: Forum,
-        success: function (response, textStatus, xhr) {
-            location.reload();
-        },
-        error: function (response, ajaxOptions, thrownError) {
-            response = response.responseJSON.value;
-            newsuberrors = ""
-            if (response.message == "Name is not unique") {
-                newsuberrors = response.message;
-            } else {
-                newsuberrors = response.message;
-            }
-            $('#newsuberrors').text(newsuberrors)
-        }
-    });
+    NewSub(Forum);
 })
 
 $('#btneditsub').click(function () {
@@ -65,27 +45,5 @@ $('#btneditsub').click(function () {
     var Forum = $("#editsubforumform").serialize();
     Forum += "&subforumid=";
     Forum += selectedSub;
-
-    var Bearer = 'bearer ' + getCookie('accessToken');
-    $.ajax({
-        type: "POST",
-        url: "/api/Forum/Edit",
-        headers: {
-            'Authorization': Bearer
-        },
-        data: Forum,
-        success: function (response, textStatus, xhr) {
-            location.reload();
-        },
-        error: function (response, ajaxOptions, thrownError) {
-            response = response.responseJSON.value;
-            newsuberrors = ""
-            if (response.message == "Name is not unique") {
-                newsuberrors = response.message;
-            } else {
-                newsuberrors = response.message;
-            }
-            $('#newsuberrors').text(newsuberrors)
-        }
-    });
+    EditSub(Forum);
 })
