@@ -10,7 +10,7 @@
             $grid.masonry('remove', $('#' + ID));
             $('.grid').masonry();
         },
-        error: function (xhr, ajaxOptions, thrownError) {
+        error: function (response, ajaxOptions, thrownError) {
             if (response.status == 401 && response.getAllResponseHeaders().includes("The token is expired")) {
                 RefreshToken(DeleteSub, ID);
             } else {
@@ -35,7 +35,7 @@ function NewSub(Forum) {
         error: function (response, ajaxOptions, thrownError) {
             if (response.status == 401 && response.getAllResponseHeaders().includes("The token is expired")) {
                 RefreshToken(NewSub, Forum);
-                 
+                return; 
             }
             response = response.responseJSON.value;
             newsuberrors = ""
@@ -64,6 +64,7 @@ function NewSub(Forum) {
         error: function (response, ajaxOptions, thrownError) {
             if (response.status == 401 && response.getAllResponseHeaders().includes("The token is expired")) {
                 RefreshToken(EditSub, Forum);
+                return;
             }
             response = response.responseJSON.value;
             newsuberrors = ""

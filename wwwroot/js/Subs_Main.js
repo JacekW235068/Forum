@@ -47,3 +47,11 @@ $('#btneditsub').click(function () {
     Forum += selectedSub;
     EditSub(Forum);
 })
+
+function DeleteSubButtonListener() {
+    event.stopPropagation();
+
+    DeleteSub(
+        $(this).parent().parent().attr('id')
+    );
+};
