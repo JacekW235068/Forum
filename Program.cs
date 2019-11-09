@@ -12,6 +12,7 @@ namespace Forum
 {
     public class Program
     {
+        //TODO: turn "api" into actual api
         public static void Main(string[] args)
         {
             CreateWebHostBuilder(args).Build().Run();

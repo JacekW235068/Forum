@@ -26,7 +26,7 @@ function createThreadView(thread, roles, username) {
                     ${userName}
                 </div>
                 <div class="time">
-                    created: ${postTime}
+                    created: ${postTime} <br/>
                     last post: ${lastPostTime}
                 </div>
                 </div>
@@ -74,109 +74,3 @@ function createThreadView(thread, roles, username) {
 }
 
 
-function RemoveThreadListener() {
-    event.stopPropagation();
-    ID = $(this).parent().parent().attr('id');
-    var Bearer = 'bearer ' + getCookie('accessToken');
-    $.ajax({
-        url: "/api/Thread/Delete/" + ID,
-        method: 'DELETE',
-        headers: {
-            'Authorization': Bearer
-        },
-        success: function (response) {
-            $grid.masonry('remove', $('#' + ID));
-        },
-        error: function (xhr, ajaxOptions, thrownError) {
-            console.log(thrownError);
-        }
-    });
-}
-
-function EditThreadListener(){
-    if (!$("#editthreadform").valid()) return;
-    var Thread = $("#editthreadform").serialize();
-    Thread += "&threadid=";
-    Thread += selectedThread;//???
-
-    var Bearer = 'bearer ' + getCookie('accessToken');
-    $.ajax({
-        type: "POST",
-        url: "/api/Thread/Edit",
-        headers: {
-            'Authorization': Bearer
-        },
-        data: Thread,
-        success: function (response, textStatus, xhr) {
-            response = response.data;
-            $('#' + response.id).find(".item-title").text(response.title);
-            $('#' + response.id).find(".item-text").text(response.text);
-            $grid.masonry();
-        },
-        error: function (response, ajaxOptions, thrownError) {
-            response = response.responseJSON.value;
-            newsuberrors = ""
-            if (response.message == "Name is not unique") {
-                newsuberrors = response.message;
-            } else {
-                newsuberrors = response.message;
-            }
-            $('#newsuberrors').text(newsuberrors)
-        }
-    });
-
-}
-
-function MoveThreadListener() {
-    var data = { threadID: selectedThread, subForumID: $(this).attr('id') };
-    var Bearer = 'bearer ' + getCookie('accessToken');
-    $.ajax({
-        type: "POST",
-        url: "/api/Thread/Move",
-        contentType: "application/json; charset=UTF-8",
-        headers: {
-            'Authorization': Bearer
-        },
-        data: JSON.stringify(data),
-        success: function (response, textStatus, xhr) {
-            $('#' + selectedThread)
-            $grid.masonry('remove', $('#' + selectedThread) ).masonry();
-        },
-        error: function (response, ajaxOptions, thrownError) {
-            
-        }
-    });
-
-}
-
-function MoveButtonListener() {
-    event.stopPropagation();
-    $("#sublistmodal").modal('toggle');
-    selectedThread = $(this).parent().parent().attr('id');
-    $.ajax({
-        url: "/api/Forum/AllForums",
-        type: 'get',
-        success: function (response) {
-            response = response.data;
-            subID = window.location.href.split("?subID=")[1];
-            response.forEach(function (sub) {
-                if (subID == sub.id) {
-                    $('#sublist').append(
-                        $.parseHTML(
-                            `<button type="button" class="list-group-item list-group-item-action" disabled>${sub.name}</button>`
-                        )
-                    );
-                } else {
-                    var $item = $($.parseHTML(
-                        `<button id="${sub.id}" type="button" class="list-group-item list-group-item-action">${sub.name}</button>`
-                    ));
-                    $item.click(MoveThreadListener);
-                    $('#sublist').append($item);
-                }
-            });
-        },
-        error: function (xhr, ajaxOptions, thrownError) {
-            //TODO
-        }
-    });
-}

@@ -5,8 +5,10 @@ var $grid = $('.grid').masonry({
 });
 var start = 0;
 var amount = 3;
+var SubID = "";
 //////LISTENERS//////
 $(document).ready(function () {
+    SubID =  window.location.href.split("?subID=")[1];
     roles = getCookie("roles");
     if (roles != null) {
         if (roles.includes("Admin") || roles.includes("NormalUser")) {
@@ -27,49 +29,36 @@ $('#btnnewthread').click(function () {
     if (!$("#threadform").valid()) return;
     var Thread = $("#threadform").serialize();
     Thread += "&subforumid=";
-    Thread += window.location.href.split("?subID=")[1];//???
-    var Bearer = 'bearer ' + getCookie('accessToken');
-    $.ajax({
-        type: "POST",
-        url: "/api/Thread/New",
-        headers: {
-            'Authorization': Bearer
-        },
-        data: Thread,
-        success: function (response, textStatus, xhr) {
-            response = response.data;
-            $div = createThreadView(response, getCookie('roles'), getCookie('username'));
-            $grid.prepend($div).masonry('prepended', $div).masonry();
-        },
-        error: function (response, ajaxOptions, thrownError) {
-       
-        }
-    });
-
+    Thread += SubID;
+    NewThread(Thread);
 });
 
 $("#loadmore").click(function () {
-
-    var subForumID = window.location.href.split("?subID=")[1];
-
-    $.ajax({
-        url: "/api/Thread/Threads",
-        type: 'get',
-        data: { subForumID, start, amount },
-        success: function (response) {
-            if (response === 'undefined') {
-                //stop requesting
-                return;
-            }
-            response = response.data;
-            if (response.length == amount)
-                start += amount;
-            else { //stop requesting
-            }
-            generateThreads(response);
-        },
-        error: function (xhr, ajaxOptions, thrownError) {
-            //TODO
-        }
-    });
+    LoadThreads(SubID);    
 });
+
+function RemoveThreadListener() {
+    event.stopPropagation();
+    ID = $(this).parent().parent().attr('id');
+    RemoveThread(ID);
+}
+
+function EditThreadListener() {
+    if (!$("#editthreadform").valid()) return;
+    var Thread = $("#editthreadform").serialize();
+    Thread += "&threadid=";
+    Thread += selectedThread;//???
+    EditThread(Thread);
+}
+
+function MoveThreadListener() {
+    var data = { threadID: selectedThread, subForumID: $(this).attr('id') };
+    MoveThread(data);
+}
+
+function MoveButtonListener() {
+    event.stopPropagation();
+    $("#sublistmodal").modal('toggle');
+    selectedThread = $(this).parent().parent().attr('id');
+    FetchSubsForMovingThreads(SubID);
+}
