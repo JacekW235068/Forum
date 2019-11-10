@@ -7,25 +7,6 @@ function ViewThread(id) {
     LoadPosts(id);
 }
 
-function LoadPosts(id) {
-    var Data = { threadID: id, start: 0, amount: 10000 }
-    $.ajax({
-        url: "/api/Post/Posts",
-        type: 'get',
-        data: Data,
-        success: function (response, textStatus, xhr) {
-            if (response === undefined) {
-                return;
-            }
-            generatePosts(response.data);
-        },
-        error: function (response, ajaxOptions, thrownError) {
-            $('#threadmodal').modal('hide');
-            alert(thrownError);
-        }
-    });
-}
-
 function generatePosts(posts){
     var username = getCookie('username');
     var roles = getCookie('roles');
@@ -91,7 +72,7 @@ function createPostView(post, roles, username) {
             $(this).parent().find('.ok-post-button').removeAttr('hidden');
 
         });
-        $ok.click(EditPost);
+        $ok.click(EditPostListener);
     }
     return $newPostDiv;
 }
@@ -99,47 +80,17 @@ function createPostView(post, roles, username) {
 function RemovePostListener() {
     event.stopPropagation();
     ID = $(this).parent().parent().attr('id');
-    var Bearer = 'bearer ' + getCookie('accessToken');
-    $.ajax({
-        url: "/api/Post/Delete/" + ID,
-        method: 'DELETE',
-        headers: {
-            'Authorization': Bearer
-        },
-        success: function (response) {
-            $('#' + ID).remove();
-        },
-        error: function (xhr, ajaxOptions, thrownError) {
-            console.log(thrownError);
-        }
-    });
+    RemovePost(ID);
 }
 
-function EditPost() {
+function EditPostListener() {
     event.stopPropagation();
     var PostID = $(this).parent().parent().attr('id');
     var Text = $('#edit-post-input').val();
     var data = { PostID, Text };
-    var Bearer = 'bearer ' + getCookie('accessToken');
-    $.ajax({
-        type: "POST",
-        url: "/api/Post/Edit",
-        headers: {
-            'Authorization': Bearer
-        },
-        contentType: "application/json; charset=UTF-8",
-        data: JSON.stringify(data),
-        success: function (response, textStatus, xhr) {
-            response = response.data;
-            $('.ok-post-button').attr('hidden', true);
-            $('#' + response.postID).find(".post-body").html("");
-            $('#' + response.postID).find(".post-body").text(response.text);
-        },
-        error: function (response, ajaxOptions, thrownError) {
-            alert(thrownError);
-        }
-    });
+    EditPost(data);
 }
 $('#threadmodal').on('hidden.bs.modal', function () {
     $('#threadposts').html("");
 });
+

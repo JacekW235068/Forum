@@ -18,33 +18,8 @@ $('#btnnewpost').click(function () {
     var Post = $("#poform").serialize();
     Post += "&parentid=";
     Post += selectedThread;
-
-    var Bearer = 'bearer ' + getCookie('accessToken');
-    $.ajax({
-        type: "POST",
-        url: "/api/Post/New",
-        headers: {
-            'Authorization': Bearer
-        },
-        data: Post,
-        success: function (response, textStatus, xhr) {
-            response = response.data;
-            var username = getCookie('username');
-            var roles = getCookie('roles');
-            var $div = createPostView(response, roles, username);
-            $('#threadposts').append($div);
-        },
-        error: function (response, ajaxOptions, thrownError) {
-            response = response.responseJSON.value;
-            newsuberrors = ""
-            if (response.message == "Name is not unique") {
-                newsuberrors = response.message;
-            } else {
-                newsuberrors = response.message;
-            }
-            $('#newsuberrors').text(newsuberrors)
-        }
-    });
+    NewPost(Post);
+  
 });
 
 function LoginButtonListener() {
