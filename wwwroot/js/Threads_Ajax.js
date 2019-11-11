@@ -32,18 +32,22 @@ function LoadThreads(subForumID) {
     $.ajax({
         url: "/api/Thread/Threads",
         type: 'get',
-        data: { subForumID, start, amount },
+        data: { subForumID, start: start_thread, amount: amount_thread },
         success: function (response) {
             if (response === undefined) {
-                //stop requesting
+                start_thread = -1;
                 return;
             }
             else {
                 response = response.data;
-                if (response.length == amount)
-                    start += amount;
+                generateThreads(response);
+                if (response.length == amount_thread)
+                    start_thread += amount_thread;
+                else
+                    start_thread = -1;
+                LoadMoreThreads();
             }
-            generateThreads(response);
+            
         },
         error: function (xhr, ajaxOptions, thrownError) {
             alert("sth went wrong");

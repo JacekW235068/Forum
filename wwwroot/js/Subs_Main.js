@@ -55,3 +55,5 @@ function DeleteSubButtonListener() {
         $(this).parent().parent().attr('id')
     );
 };
+
+$()

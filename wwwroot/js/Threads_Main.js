@@ -3,8 +3,8 @@ var $grid = $('.grid').masonry({
 
     itemSelector: '.grid-item'
 });
-var start = 0;
-var amount = 3;
+var start_thread = 0;
+var amount_thread = 3;
 var SubID = "";
 //////LISTENERS//////
 $(document).ready(function () {
@@ -23,6 +23,11 @@ $(document).ready(function () {
             $('#btneditthread').click(EditThreadListener);
         }
     }
+    $(window).scroll(function () {
+        LoadMoreThreads();
+    });
+    LoadMoreThreads();
+
 });
 
 $('#btnnewthread').click(function () {
@@ -36,6 +41,16 @@ $('#btnnewthread').click(function () {
 $("#loadmore").click(function () {
     LoadThreads(SubID);    
 });
+
+function LoadMoreThreads() {
+    if (($(document).height() - $(window).height() - $(window).scrollTop()) < 250) {
+        if (start_thread > -1) {
+            LoadThreads(SubID);
+        } else {
+            $(window).unbind("scroll")
+        }
+    }
+}
 
 function RemoveThreadListener() {
     event.stopPropagation();
@@ -62,3 +77,4 @@ function MoveButtonListener() {
     selectedThread = $(this).parent().parent().attr('id');
     FetchSubsForMovingThreads(SubID);
 }
+
