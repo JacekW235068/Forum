@@ -19,7 +19,7 @@ $('#btnnewpost').click(function () {
     Post += "&parentid=";
     Post += selectedThread;
     NewPost(Post);
-  
+    
 });
 
 function LoginButtonListener() {
@@ -95,6 +95,22 @@ function AccountData() {
                 })
                 setCookie("username", $('#username').text(), 1);
             }
+            $('#logout').click(function () {
+                
+                var Bearer = 'bearer ' + getCookie('accessToken');
+                $.ajax({
+                    url: "/api/Account/Logout",
+                    method: 'POST',
+                    headers: {
+                        'Authorization': Bearer
+                    }
+                });
+                eraseCookie("accessToken");
+                eraseCookie("refreshToken");
+                eraseCookie("roles");
+                eraseCookie("username");
+                location.reload();
+            });
         },
         error: function (response, ajaxOptions, thrownErrorr) {
             if (response.status == 401) {
