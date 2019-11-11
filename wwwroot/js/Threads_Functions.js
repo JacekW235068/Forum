@@ -48,7 +48,7 @@ function createThreadView(thread, roles, username) {
     var $remove = $newThreadDiv.find('.remove-thread-button');
     var $edit = $newThreadDiv.find('.edit-thread-button');
     var $move = $newThreadDiv.find('.move-thread-button');
-    if (roles != null && (roles.includes('Admin') || userName.includes(userName))) {
+    if (roles != null && (roles.includes('Admin') || userName == username)) {
         $remove.removeAttr('hidden');
         $remove.click(RemoveThreadListener);
     }

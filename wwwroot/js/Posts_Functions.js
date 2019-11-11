@@ -48,7 +48,7 @@ function createPostView(post, roles, username) {
     var $edit = $newPostDiv.find('.edit-post-button');
     var $ok = $newPostDiv.find('.ok-post-button');
 
-    if (roles != null && (roles.includes('Admin') || userName.includes(userName))) {
+    if (roles != null && (roles.includes('Admin') || userName == username)) {
         $remove.removeAttr('hidden');
         $remove.click(RemovePostListener);
     }
