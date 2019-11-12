@@ -1,12 +1,25 @@
-﻿var selectedPost = "";
+﻿var start_post = 0;
+var amount_post = 3;
 function ViewThread(id) {
     selectedThread = id;
     $('#thread-title').text($('#' + id).find('.item-title').text());
     $('#thread-text').text($('#' + id).find('.item-text').text());
     $('#threadmodal').modal('toggle');
+    $('#threadposts').scroll(function () {
+        LoadMorePosts();
+    });
     LoadPosts(id);
 }
 
+function LoadMorePosts() {
+    if (($('#threadposts')[0].scrollHeight - $('#threadposts').height() - $('#threadposts').scrollTop())  < 250) {
+        if (start_post > -1) {
+            LoadPosts(selectedThread);
+        } else {
+            $('#threadview').unbind("scroll")
+        }
+    }
+}
 function generatePosts(posts){
     var username = getCookie('username');
     var roles = getCookie('roles');
@@ -92,5 +105,7 @@ function EditPostListener() {
 }
 $('#threadmodal').on('hidden.bs.modal', function () {
     $('#threadposts').html("");
+    start_post = 0;
+    amount_post = 3;
 });
 

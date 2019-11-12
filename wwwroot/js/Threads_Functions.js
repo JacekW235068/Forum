@@ -1,4 +1,15 @@
-﻿var selectedThread = "";
+﻿function LoadMoreThreads() {
+    
+    if (($(document).height() - $(window).height() - $(window).scrollTop()) < 250) {
+        if (start_thread > -1) {
+            LoadThreads(SubID);
+        } else {
+            $(window).unbind("scroll")
+        }
+    }
+}
+
+
 function generateThreads(threads) {
     var username = getCookie('username');
     var roles = getCookie('roles');

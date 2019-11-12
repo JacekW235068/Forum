@@ -57,17 +57,18 @@
         </div>
     </div>
     <div class="modal fade" id="threadmodal">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-dialog-scrollable">
             <div class="modal-content" id="threadview">
-                <div id="threadheader" style="width: 100%">
-                    <p class="item-title" id="thread-title"></p>
-                    <div class="item-text" id="thread-text"></div>
+                <div class="modal-header">
+                    <div id="threadheader" style="width: 100%">
+                        <p class="item-title" id="thread-title"></p><br />
+                        <div class="item-text" id="thread-text"></div>
+                    </div>
+                    <div id="postform" style="width: 100%">
+                        @await Html.PartialAsync("AddPostPartial", null, null)
+                    </div>
                 </div>
-                <div id="postform" style="width: 100%">
-                    @await Html.PartialAsync("AddPostPartial", null, null)
-                </div>
-                <div id="threadposts" style="width: 100%">
-
+                <div class="modal-body" id="threadposts">
                 </div>
             </div>
         </div>

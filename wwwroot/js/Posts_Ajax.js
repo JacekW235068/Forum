@@ -1,14 +1,24 @@
 ﻿function LoadPosts(id) {
-    var Data = { threadID: id, start: 0, amount: 10000 }
+    var Data = { threadID: id, start: start_post, amount: amount_post }
     $.ajax({
         url: "/api/Post/Posts",
         type: 'get',
         data: Data,
         success: function (response, textStatus, xhr) {
             if (response === undefined) {
+                start_post = -1;
                 return;
             }
-            generatePosts(response.data);
+            else {
+                response = response.data;
+                generatePosts(response);
+                if (response.length == amount_post)
+                    start_post += amount_post;
+                //else
+                //    start_post = -1;
+                LoadMorePosts();
+            }
+            
         },
         error: function (response, ajaxOptions, thrownError) {
             $('#threadmodal').modal('hide');

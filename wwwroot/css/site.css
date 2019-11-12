@@ -57,10 +57,7 @@
     width: 100%;
     background: red;
 }
-#threadview{
-    overflow-y: scroll;
-    height: 80%;
-}
+
 .navbar-nav {
     border-right: 1px solid #c0c0c0;
 }

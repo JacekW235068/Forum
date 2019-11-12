@@ -6,6 +6,7 @@ var $grid = $('.grid').masonry({
 var start_thread = 0;
 var amount_thread = 3;
 var SubID = "";
+var selectedThread = "";
 //////LISTENERS//////
 $(document).ready(function () {
     SubID =  window.location.href.split("?subID=")[1];
@@ -42,15 +43,7 @@ $("#loadmore").click(function () {
     LoadThreads(SubID);    
 });
 
-function LoadMoreThreads() {
-    if (($(document).height() - $(window).height() - $(window).scrollTop()) < 250) {
-        if (start_thread > -1) {
-            LoadThreads(SubID);
-        } else {
-            $(window).unbind("scroll")
-        }
-    }
-}
+
 
 function RemoveThreadListener() {
     event.stopPropagation();

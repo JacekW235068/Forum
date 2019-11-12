@@ -3,7 +3,7 @@ var $grid = $('.grid').masonry({
 
     itemSelector: '.grid-item'
 });
-
+//TODO: like everything
 var start = 0;
 var amount = 3;
 //////LISTENERS//////
