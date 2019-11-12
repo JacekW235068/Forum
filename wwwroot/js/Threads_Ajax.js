@@ -28,6 +28,33 @@
     });
 }
 
+function LoadRecentThreads() {
+    $.ajax({
+        url: "/api/Thread/Recent",
+        type: 'get',
+        data: {start: start_thread, amount: amount_thread },
+        success: function (response) {
+            if (response === undefined) {
+                start_thread = -1;
+                return;
+            }
+            else {
+                response = response.data;
+                generateThreads(response);
+                if (response.length == amount_thread)
+                    start_thread += amount_thread;
+                else
+                    start_thread = -1;
+                LoadMoreThreads();
+            }
+
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            alert("sth went wrong");
+        }
+    });
+}
+
 function LoadThreads(subForumID) {
     $.ajax({
         url: "/api/Thread/Threads",

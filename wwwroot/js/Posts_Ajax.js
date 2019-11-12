@@ -14,8 +14,8 @@
                 generatePosts(response);
                 if (response.length == amount_post)
                     start_post += amount_post;
-                //else
-                //    start_post = -1;
+                else
+                    start_post = -1;
                 LoadMorePosts();
             }
             

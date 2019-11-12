@@ -5,14 +5,17 @@
 <div class="header text-center">
     <h3 class="display-4">Welcome to The Forum</h3>
 </div>
-<div id="Main" >
+<div id="Main">
     @*stuff goes in here*@
     <div id="Grid" class="grid">
 
     </div>
- </div>
-    <button class="btn btn-dark" id="LoadMore">Load More recent posts</button>
-    @section Scripts{
-        
-        <script src="~/js/Index_Main.js"></script>
-    }
+</div>
+@section Scripts{
+
+    <script src="~/js/Posts_Ajax.js"></script>
+    <script src="~/js/Threads_Ajax.js"></script>
+    <script src="~/js/Posts_Functions.js"></script>
+    <script src="~/js/Index_Functions.js"></script>
+    <script src="~/js/Index_Main.js"></script>
+}

@@ -29,6 +29,7 @@ namespace Forum.DTO
             if (thread.User != null)
                 UserName = thread.User.UserName;
             Comments = thread.NumberOfComments;
+            ParentForumID = thread.ParentID.ToString();
         }
 
         public static implicit operator ForumThreadGet(ForumThread thread)

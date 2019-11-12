@@ -47,7 +47,7 @@ namespace Forum.Controllers
             if (amount == 0) return StatusCode(400, JsonFormatter.FailResponse("Invalid argument"));
             List<ForumThreadGet> threads = new List<ForumThreadGet>();
             foreach (var x in _forumDbContext.Threads.Where(x => x.ParentID == guid)
-                .Include(x => x.User).OrderBy(x => x.PostTime).Skip((int)start).Take((int)amount))
+                .Include(x => x.User).OrderByDescending(x => x.PostTime).Skip((int)start).Take((int)amount))
                 threads.Add(x);
             if (threads.Count == 0)
                 return StatusCode(204, JsonFormatter.SuccessResponse(null));

@@ -4,34 +4,19 @@ var $grid = $('.grid').masonry({
     itemSelector: '.grid-item'
 });
 //TODO: like everything
-var start = 0;
-var amount = 3;
+var start_thread = 0;
+var amount_thread = 3;
 //////LISTENERS//////
-$("#LoadMore").click(function () {
-    var Data = { start, amount }
-    $.ajax({
-        url: "/api/Thread/Recent",
-        type: 'get',
-        data: {start, amount},
-        success: function (response) {
-            response = response.data;
-            if (response.threads.length == amount)
-                start += amount;
-            else
-                $("#LoadMore").attr("disabled", true);
-            response.threads.forEach(function (thread) {
-                var $div = createNewThreadView(thread);
-                $div.click(function (event) {
-                    ViewThread($(this).attr('id'))
-                })
-                $grid.append($div).masonry('appended', $div);
-
-            })
-        },
-        error: function (xhr, ajaxOptions, thrownError) {
-            $("#LoadMore").attr("disabled", true);
-            $("#LoadMore").html("Sth went wrong");
-        }
+$(document).ready(function () {
+    $(window).scroll(function () {
+        LoadMoreThreads();
     });
-});
-//////FUNCTIONS//////
+    LoadMoreThreads();
+})
+
+
+function RemoveThreadListener() {
+    event.stopPropagation();
+    ID = $(this).parent().parent().attr('id');
+    RemoveThread(ID);
+}

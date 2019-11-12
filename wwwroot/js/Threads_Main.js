@@ -10,7 +10,7 @@ var selectedThread = "";
 //////LISTENERS//////
 $(document).ready(function () {
     SubID =  window.location.href.split("?subID=")[1];
-    roles = getCookie("roles");
+    var roles = getCookie("roles");
     if (roles != null) {
         if (roles.includes("Admin") || roles.includes("NormalUser")) {
             addButton = document.createElement('button');
@@ -39,9 +39,7 @@ $('#btnnewthread').click(function () {
     NewThread(Thread);
 });
 
-$("#loadmore").click(function () {
-    LoadThreads(SubID);    
-});
+
 
 
 
