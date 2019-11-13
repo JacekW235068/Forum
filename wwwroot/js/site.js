@@ -2,7 +2,11 @@
 var threadID = "";
 //////LISTENERS//////
 $(document).ready(function () {
-    AccountData();
+    if (getCookie("accessToken") != null)
+        AccountData();
+    else {
+        $('#btnlogin').click(LoginButtonListener);
+    }
 });
 
 $('#accountbutton').click(function () {
@@ -30,10 +34,9 @@ function LoginButtonListener() {
         url: "/api/Account/Login",
         data: LoginData,
         success: function (response, textStatus, xhr) {
-            setCookie("accessToken", response.data.accessToken, 1);
-            setCookie("refreshToken", response.data.refreshToken, 30);
+            setCookie("accessToken", response.data.accessToken, 20);
+            setCookie("refreshToken", response.data.refreshToken, 20);
             AccountData();
-            location.reload();
         },
         error: function (response, ajaxOptions, thrownErrorr) {
             response = response.responseJSON.value;
@@ -73,44 +76,27 @@ function LoginButtonListener() {
 }
 //////FUNCTIONS//////
 function AccountData() {
+    var Bearer = 'bearer ' + getCookie('accessToken');
     $.ajax({
-        url: "/Home/AccountInfoAsync",
+        url: "/api/Account/Info",
         type: 'get',
-        data: { accessToken: getCookie("accessToken") },
+        headers: {
+            'Authorization': Bearer
+        },
         success: function (response, textStatus, xhr) {
-            $('#accountcontent').html(response);
-            if ($('#accountcontent').html().includes("form")) {
-                eraseCookie("accessToken");
-                eraseCookie("refreshToken");
-                eraseCookie("roles");
-                eraseCookie("username");
-                InitAccountForm();
-            } else {
-                roles = "";
-                $var = $('#roles > p');
-                $var.each(function (obj) {
-                    roles += $(this).text();
-                    roles += ',';
-                    setCookie("roles", roles, 1);
-                })
-                setCookie("username", $('#username').text(), 1);
-                $('#postformdiv').removeAttr('hidden')
-                $('#logout').click(function () {
-                    var Bearer = 'bearer ' + getCookie('accessToken');
-                    $.ajax({
-                        url: "/api/Account/Logout",
-                        method: 'POST',
-                        headers: {
-                            'Authorization': Bearer
-                        }
-                    });
-                    eraseCookie("accessToken");
-                    eraseCookie("refreshToken");
-                    eraseCookie("roles");
-                    eraseCookie("username");
-                    location.reload();
-                });
-            }
+            
+            roles = "";
+            response = response.data;
+            response.roles.forEach(function (obj) {
+                roles += obj;
+                roles += ',';
+                
+            })
+            setCookie("roles", roles, 20);
+            setCookie("username", response.userName, 20);
+            $('#postformdiv').removeAttr('hidden')
+            
+            generateAccountInfo(response);
         },
         error: function (response, ajaxOptions, thrownErrorr) {
             if (response.status == 401) {
@@ -127,12 +113,7 @@ function AccountData() {
     });
 }
 
-function InitAccountForm() {
-    $("#loginform").removeData("validator");
-    $("#loginform").removeData("unobtrusiveValidation");
-    $.validator.unobtrusive.parse("#loginform");
-    $('#btnlogin').click(LoginButtonListener);
-}
+
 
 
 function RefreshToken( CallBack, CallBackData) {
@@ -140,20 +121,19 @@ function RefreshToken( CallBack, CallBackData) {
     var Data = { accessToken: getCookie("accessToken"), refreshToken: getCookie("refreshToken") }
     eraseCookie("accessToken");
     eraseCookie("refreshToken");
-    var result = false;
-    var request = $.ajax({
+    $.ajax({
         type: "POST",
         url: "/api/Account/RefreshToken",
         contentType: "application/json; charset=UTF-8",
         data: JSON.stringify(Data),
         success: function (response, textStatus, xhr) {
-            setCookie("accessToken", response.data.accessToken, 1);
-            setCookie("refreshToken", response.data.refreshToken, 30);
+            setCookie("accessToken", response.data.accessToken, 20);
+            setCookie("refreshToken", response.data.refreshToken, 20);
             if (CallBack !== undefined) {
                 CallBack(CallBackData);
             }
             AccountData();
-            result = true;
+       
         },
         error: function (response, ajaxOptions, thrownErrorr) {
             AccountData();
@@ -162,6 +142,39 @@ function RefreshToken( CallBack, CallBackData) {
 
 }
 
+
+function generateAccountInfo(data) {
+    userName = data.userName;
+    roles = "";
+    data.roles.forEach(function (role) {
+        roles += role;
+        roles += ' ';
+    });
+    $('#accountcontent').html(`<div id="${threadID}" class="grid-item postdiv">
+                <div class="username">
+                    ${userName}
+                </div>
+                <div class="roles">
+                   ${roles}
+                </div>
+            <button class="btn btn-dark" id="logout">Logout</button>
+`);
+    $('#logout').click(function () {
+        var Bearer = 'bearer ' + getCookie('accessToken');
+        $.ajax({
+            url: "/api/Account/Logout",
+            method: 'POST',
+            headers: {
+                'Authorization': Bearer
+            }
+        });
+        eraseCookie("accessToken");
+        eraseCookie("refreshToken");
+        eraseCookie("roles");
+        eraseCookie("username");
+        location.reload();
+    });
+}
 
 //randomowe funkcje ze stacka
 

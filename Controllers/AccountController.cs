@@ -33,6 +33,34 @@ namespace Forum.Controllers
             _signInManager = signInManager;
         }
 
+        
+        [Authorize]
+        [HttpGet]
+        [Route("Info")]
+        public async Task<IActionResult> AccountInfo()
+        {
+            JwtSecurityToken accessToken;
+            var handler = new JwtSecurityTokenHandler();
+            string id;
+            try
+            {
+              var trimmedToken = Request.Headers["Authorization"].ToString();
+              trimmedToken = trimmedToken.Substring(7);
+              accessToken = handler.ReadJwtToken(trimmedToken);
+              id = accessToken.Claims.FirstOrDefault(x => x.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier").Value;
+            }
+            catch { return StatusCode(400, JsonFormatter.FailResponse("Bad Token")); }
+            var user = await _forumDbContext.Users.FirstOrDefaultAsync(x => x.Id == id);
+            if (user == null)
+                return StatusCode(400, JsonFormatter.ErrorResponse("User does not exist"));
+            var roles = await _userManager.GetRolesAsync(user);
+            return JsonFormatter.SuccessResponse(new
+            {
+                userName = user.UserName,
+                roles
+            });
+        }
+
 
         [HttpPost]
         [Route("Register")]

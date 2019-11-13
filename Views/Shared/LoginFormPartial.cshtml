@@ -1,0 +1,16 @@
+﻿@model Forum.DTO.AppUserLoginPost;
+<div class="modal-body">
+    <form id="loginform">
+        @Html.TextBoxFor(model => model.Email, new { @class = "form-control", @placeholder = "Email" })
+        @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger", @id = "loginemail" })
+        <br />
+        @Html.TextBoxFor(model => model.Password, new { @class = "form-control", @placeholder = "Password", @type = "password" })
+        @Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger", @id = "loginpassword" })
+        <br />
+    </form>
+    <div id="servererrors" class="text-danger"></div>
+</div>
+<div class="modal-footer">
+    <a href="/Home/RegisterForm">Need account?</a>
+    <input type="button" value="Login" class="btn btn-block btn-primary " id="btnlogin" />
+</div>

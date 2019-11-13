@@ -50,36 +50,6 @@ namespace Forum.Controllers
             ViewData["Title"] = Title;
             return View();
         }
-        public async Task<IActionResult> AccountInfoAsync([FromQuery]string accessToken)
-        {
-            if (accessToken != null)
-            {
-                string userID;
-                try
-                {
-                    JwtSecurityToken AccessToken;
-                    var handler = new JwtSecurityTokenHandler();
-                    AccessToken = handler.ReadJwtToken(accessToken);
-                    if (AccessToken.ValidTo.AddHours(1) < DateTime.Now)
-                    {
-                        return Unauthorized();
-                    }
-                    userID = AccessToken.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier).Value;
-                }
-                catch { return BadRequest("Bad Token"); }
-                var user = (await _forumDbContext.Users.FirstOrDefaultAsync(x => x.Id == userID));
-                if (user == null)
-                    return View();
-                var userroles = _forumDbContext.UserRoles.Where(y => y.UserId == userID).ToArray();
-                var roles = _forumDbContext.Roles.Where(x => userroles.Any(y => y.RoleId == x.Id)).Select(x => x.Name).ToArray();
-                //add parameters for viewbag
-                ViewBag.User = user;
-                ViewBag.Roles = roles;
-
-
-            }
-            return View();
-        }
 
         [Route("Subs")]
         public IActionResult SubForumNavigation()
