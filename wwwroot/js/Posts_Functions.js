@@ -65,7 +65,7 @@ function createPostView(post, roles, username) {
         $remove.removeAttr('hidden');
         $remove.click(RemovePostListener);
     }
-    if (userName != null && username.includes(userName)) {
+    if (userName != null && userName.includes(username)) {
         $edit.removeAttr('hidden');
         $edit.click(function () {
             event.stopPropagation();

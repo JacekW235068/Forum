@@ -35,7 +35,7 @@ namespace Forum.Controllers {
                 return StatusCode(400,JsonFormatter.FailResponse("Wrong Format"));
             if (amount == 0) return StatusCode(400,JsonFormatter.FailResponse("Invalid argument"));
             var postDTO = new List<ForumPostGet>();
-            var posts = _forumDbContext.Posts.Where(x => x.ParentID == guid).OrderBy(x=>x.PostTime).Skip((int)start).Take((int)amount).Include(x=>x.User);
+            var posts = _forumDbContext.Posts.Where(x => x.ParentID == guid).OrderByDescending(x=>x.PostTime).Skip((int)start).Take((int)amount).Include(x=>x.User);
             foreach (var x in posts)
                 postDTO.Add(x);
             if (postDTO.Count == 0)

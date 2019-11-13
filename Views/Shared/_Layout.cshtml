@@ -60,11 +60,11 @@
         <div class="modal-dialog modal-dialog-scrollable">
             <div class="modal-content" id="threadview">
                 <div class="modal-header">
-                    <div id="threadheader" style="width: 100%">
+                    <div id="threadheader">
                         <p class="item-title" id="thread-title"></p><br />
                         <div class="item-text" id="thread-text"></div>
                     </div>
-                    <div id="postform" style="width: 100%">
+                    <div id="postformdiv" hidden>
                         @await Html.PartialAsync("AddPostPartial", null, null)
                     </div>
                 </div>

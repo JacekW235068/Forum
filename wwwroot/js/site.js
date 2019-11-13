@@ -14,8 +14,8 @@ $('#threadmodal').on('hidden.bs.modal', function (e) {
 })
 
 $('#btnnewpost').click(function () {
-    if (!$("#poform").valid()) return; //why doesnt postform work????
-    var Post = $("#poform").serialize();
+    if (!$("#postform").valid()) return; //why doesnt postform work????
+    var Post = $("#postform").serialize();
     Post += "&parentid=";
     Post += selectedThread;
     NewPost(Post);
@@ -94,23 +94,23 @@ function AccountData() {
                     setCookie("roles", roles, 1);
                 })
                 setCookie("username", $('#username').text(), 1);
-            }
-            $('#logout').click(function () {
-                
-                var Bearer = 'bearer ' + getCookie('accessToken');
-                $.ajax({
-                    url: "/api/Account/Logout",
-                    method: 'POST',
-                    headers: {
-                        'Authorization': Bearer
-                    }
+                $('#postformdiv').removeAttr('hidden')
+                $('#logout').click(function () {
+                    var Bearer = 'bearer ' + getCookie('accessToken');
+                    $.ajax({
+                        url: "/api/Account/Logout",
+                        method: 'POST',
+                        headers: {
+                            'Authorization': Bearer
+                        }
+                    });
+                    eraseCookie("accessToken");
+                    eraseCookie("refreshToken");
+                    eraseCookie("roles");
+                    eraseCookie("username");
+                    location.reload();
                 });
-                eraseCookie("accessToken");
-                eraseCookie("refreshToken");
-                eraseCookie("roles");
-                eraseCookie("username");
-                location.reload();
-            });
+            }
         },
         error: function (response, ajaxOptions, thrownErrorr) {
             if (response.status == 401) {

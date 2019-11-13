@@ -88,7 +88,7 @@ function NewPost(Post) {
             var username = getCookie('username');
             var roles = getCookie('roles');
             var $div = createPostView(response, roles, username);
-            $('#threadposts').append($div);
+            $('#threadposts').prepend($div);
         },
         error: function (response, ajaxOptions, thrownError) {
             if (response.status == 401 && response.getAllResponseHeaders().includes("The token is expired")) {
