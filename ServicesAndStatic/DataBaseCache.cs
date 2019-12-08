@@ -50,6 +50,8 @@ namespace Forum.Services
             {
                 subForums.Add(sub);
             }
+            InitForumThreads(context);
+
         }
 
         public IReadOnlyCollection<ForumThreadGet> GetThreads(ForumDbContext context, uint start, uint amount)

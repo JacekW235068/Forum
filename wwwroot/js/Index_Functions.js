@@ -41,6 +41,7 @@ function createThreadView(thread, roles, username) {
                     created: ${postTime} <br/>
                     last post: ${lastPostTime}
                 </div>
+            </div>
                 <a class="btn btn-primary" href="/Threads?subID=${parentID}" role="button">Link</a>
                 <div class="item-body">
                     <p class="item-title">${title}</p><br/>

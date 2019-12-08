@@ -44,7 +44,7 @@ namespace Forum.Services
             }
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Key));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            var expires = DateTime.Now.AddMinutes(1);
+            var expires = DateTime.Now.AddDays(ExpirationDate);
 
             var token = new JwtSecurityToken(
                 Issuer,

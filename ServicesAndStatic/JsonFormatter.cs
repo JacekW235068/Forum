@@ -40,13 +40,10 @@ namespace Forum.Services
 
             return new JsonResult(
                 new
-                {
-                    value = new
-                    {
+                { 
                         Status = "error",
                         Message = responseMessage,
                         Data = formattedErrors
-                 }
                 });
         }
         public static JsonResult ErrorResponse(string responseMessage, IDictionary<string,string> errors)

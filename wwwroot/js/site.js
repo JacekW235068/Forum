@@ -39,7 +39,7 @@ function LoginButtonListener() {
             AccountData();
         },
         error: function (response, ajaxOptions, thrownErrorr) {
-            response = response.responseJSON.value;
+            response = response.responseJSON.value.value;
             servererrors = "";
             loginpassword = "";
             loginemail = "";
@@ -67,6 +67,9 @@ function LoginButtonListener() {
                     servererrors = "your account has beed locked out due to too many failed login attempt";
                     $('#btnlogin').attr("disabled", true);
                 }
+            }
+            if (response.message == "Login failed") {
+                servererrors = "Login Failed";
             }
             $('#servererrors').text(servererrors);
             $('#loginemail').text(loginemail);
